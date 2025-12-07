@@ -27,33 +27,81 @@ import java.util.Optional;
 
 public class HandResult {
 
+    /* @ spec_public @ */
     private final Player winner;
+    /* @ spec_public @ */
     private final HandPoints points;
+
+    /* @ public invariant points != null; @ */
 
     private HandResult(Player winner, HandPoints handPoints) {
         this.winner = winner;
         this.points = handPoints;
     }
 
-    public static HandResult of(Player winner, HandPoints handPoints){
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires winner != null;
+     * 
+     * @ requires handPoints != null;
+     * 
+     * @ requires !handPoints.equals(HandPoints.ZERO);
+     * 
+     * @ ensures \result.winner == winner;
+     * 
+     * @ ensures \result.points == handPoints;
+     * 
+     * @ public exceptional_behavior
+     * 
+     * @ signals (NullPointerException e) winner == null || handPoints == null;
+     * 
+     * @ signals (IllegalArgumentException e) handPoints.equals(HandPoints.ZERO);
+     * 
+     * @
+     */
+    public static /* @ pure @ */ HandResult of(Player winner, HandPoints handPoints) {
         Objects.requireNonNull(winner, "Player must not be null!");
         Objects.requireNonNull(handPoints, "Hand score must not be null!");
 
-        if(handPoints.equals(HandPoints.ZERO))
+        if (handPoints.equals(HandPoints.ZERO))
             throw new IllegalArgumentException("Points of an untied hand must not be zero.");
 
         return new HandResult(winner, handPoints);
     }
 
-    public static HandResult ofDraw(){
+    /*
+     * @ public normal_behavior
+     * 
+     * @ ensures \result.winner == null;
+     * 
+     * @ ensures \result.points == HandPoints.ZERO;
+     * 
+     * @
+     */
+    public static /* @ pure @ */ HandResult ofDraw() {
         return new HandResult(null, HandPoints.ZERO);
     }
 
-    public Optional<Player> getWinner() {
+    /*
+     * @ public normal_behavior
+     * 
+     * @ ensures \result != null;
+     * 
+     * @
+     */
+    public /* @ pure @ */ Optional<Player> getWinner() {
         return Optional.ofNullable(winner);
     }
 
-    public HandPoints getPoints() {
+    /*
+     * @ public normal_behavior
+     * 
+     * @ ensures \result == points;
+     * 
+     * @
+     */
+    public /* @ pure @ */ HandPoints getPoints() {
         return points;
     }
 
@@ -65,8 +113,10 @@ public class HandResult {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         HandResult that = (HandResult) o;
         return Objects.equals(winner, that.winner) && points == that.points;
     }

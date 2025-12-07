@@ -35,6 +35,15 @@ public class PlayWithBots {
     private static final UUID uuidBot1 = UUID.randomUUID();
     private static final UUID uuidBot2 = UUID.randomUUID();
 
+    /*
+     * @ public invariant repository != null;
+     * 
+     * @ public invariant botApi != null;
+     * 
+     * @ public invariant providerService != null;
+     * 
+     * @
+     */
     private final RemoteBotRepository repository;
     private final RemoteBotApi botApi;
     private final BotManagerService providerService;
@@ -43,12 +52,36 @@ public class PlayWithBots {
     private String bot2Name;
     private int times;
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires repository != null;
+     * 
+     * @ requires botApi != null;
+     * 
+     * @ requires providerService != null;
+     * 
+     * @ ensures this.repository == repository;
+     * 
+     * @ ensures this.botApi == botApi;
+     * 
+     * @ ensures this.providerService == providerService;
+     * 
+     * @
+     */
     public PlayWithBots(RemoteBotRepository repository, RemoteBotApi botApi, BotManagerService providerService) {
         this.repository = repository;
         this.botApi = botApi;
         this.providerService = providerService;
     }
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ ensures true;
+     * 
+     * @
+     */
     public void playWithBotsConsole() {
         final var botNames = providerService.providersNames();
 
@@ -68,31 +101,81 @@ public class PlayWithBots {
         printResult(results);
     }
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ ensures true;
+     * 
+     * @
+     */
     private int scanNumberOfSimulations() {
         NumberOfSimulationsReader scanSimulations = new NumberOfSimulationsReader();
         return scanSimulations.execute();
     }
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires botManagerService != null;
+     * 
+     * @ ensures \result != null;
+     * 
+     * @
+     */
     private PlayWithBotsResultsDto playBotsStarter(BotManagerService botManagerService) {
         final PlayWithBotsUseCase useCase = new PlayWithBotsUseCase(repository, botApi, botManagerService);
         return useCase.playWithBots(uuidBot1, bot1Name, uuidBot2, bot2Name, times);
     }
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires botNames != null;
+     * 
+     * @ ensures true;
+     * 
+     * @
+     */
     private void printAvailableBots(List<String> botNames) {
         BotsAvailablePrinter printer = new BotsAvailablePrinter(botNames);
         printer.execute();
     }
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires botNames != null;
+     * 
+     * @ ensures true;
+     * 
+     * @
+     */
     private int scanBotOption(List<String> botNames) {
         BotOptionReader scanOptions = new BotOptionReader(botNames);
         return scanOptions.execute();
     }
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires result != null;
+     * 
+     * @ ensures true;
+     * 
+     * @
+     */
     private void printResult(PlayWithBotsResultsDto result) {
         PlayWithBotsPrinter printer = new PlayWithBotsPrinter(result.times(), result.timeToExecute(), result.info());
         printer.execute();
     }
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ ensures true;
+     * 
+     * @
+     */
     private void showWaitingMessage() {
         WaitingMessagePrinter messagePrinter = new WaitingMessagePrinter();
         messagePrinter.execute();

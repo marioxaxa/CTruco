@@ -11,14 +11,41 @@ import java.util.stream.Collectors;
 
 public class RankBots {
 
+    /*
+     * @ public invariant repository != null;
+     * 
+     * @ public invariant api != null;
+     * 
+     * @
+     */
     private final RemoteBotRepository repository;
     private final RemoteBotApi api;
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires repository != null;
+     * 
+     * @ requires api != null;
+     * 
+     * @ ensures this.repository == repository;
+     * 
+     * @ ensures this.api == api;
+     * 
+     * @
+     */
     public RankBots(RemoteBotRepository repository, RemoteBotApi api) {
         this.repository = repository;
         this.api = api;
     }
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ ensures true;
+     * 
+     * @
+     */
     public void allBots() {
 
         final var useCase = new RankBotsUseCase(repository, api);
@@ -31,16 +58,41 @@ public class RankBots {
         printRank(rankInfo);
     }
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires rankInfo != null;
+     * 
+     * @ ensures true;
+     * 
+     * @
+     */
     private void printRank(Map<String, Long> rankInfo) {
         BotRankPrinter printer = new BotRankPrinter(rankInfo);
         printer.execute();
     }
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ ensures true;
+     * 
+     * @
+     */
     private void showWaitingMessage() {
         WaitingMessagePrinter messagePrinter = new WaitingMessagePrinter();
         messagePrinter.execute();
     }
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires contentToSort != null;
+     * 
+     * @ ensures \result != null;
+     * 
+     * @
+     */
     private Map<String, Long> sortByValueDescending(Map<String, Long> contentToSort) {
         return contentToSort.entrySet().stream()
                 .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))

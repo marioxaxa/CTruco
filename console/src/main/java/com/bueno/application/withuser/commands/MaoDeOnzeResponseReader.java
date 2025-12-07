@@ -27,13 +27,39 @@ import java.util.Scanner;
 
 public class MaoDeOnzeResponseReader implements Command<MaoDeOnzeResponseReader.MaoDeOnzeChoice> {
 
+    /*
+     * @ public invariant mainCli != null;
+     * 
+     * @
+     */
     private final PlayAgainstBots mainCli;
-    public enum MaoDeOnzeChoice {QUIT, ACCEPT}
 
+    public enum MaoDeOnzeChoice {
+        QUIT, ACCEPT
+    }
+
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires mainCli != null;
+     * 
+     * @ ensures this.mainCli == mainCli;
+     * 
+     * @
+     */
     public MaoDeOnzeResponseReader(PlayAgainstBots mainCli) {
         this.mainCli = mainCli;
     }
 
+    /*
+     * @ also
+     * 
+     * @ public normal_behavior
+     * 
+     * @ ensures \result != null;
+     * 
+     * @
+     */
     @Override
     public MaoDeOnzeChoice execute() {
         var scanner = new Scanner(System.in);

@@ -4,6 +4,17 @@ import com.bueno.application.utils.Command;
 import com.bueno.domain.usecases.game.dtos.EvaluateResultsDto;
 
 public class EvaluateBotsPrinter implements Command<Void> {
+    /*
+     * @ public invariant botName != null;
+     * 
+     * @ public invariant numberOfGames >= 0;
+     * 
+     * @ public invariant botWins != null && botWins >= 0;
+     * 
+     * @ public invariant botWins <= numberOfGames;
+     * 
+     * @
+     */
     long numberOfGames;
     long computingTime;
     String botName;
@@ -11,6 +22,19 @@ public class EvaluateBotsPrinter implements Command<Void> {
     double winRate;
     double percentile;
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires resultsDto != null;
+     * 
+     * @ requires botName != null;
+     * 
+     * @ ensures this.numberOfGames == resultsDto.numberOfGames();
+     * 
+     * @ ensures this.botName == botName;
+     * 
+     * @
+     */
     public EvaluateBotsPrinter(EvaluateResultsDto resultsDto, String botName) {
         this.numberOfGames = resultsDto.numberOfGames();
         this.computingTime = resultsDto.computingTime();
@@ -20,6 +44,15 @@ public class EvaluateBotsPrinter implements Command<Void> {
         this.percentile = resultsDto.percentile();
     }
 
+    /*
+     * @ also
+     * 
+     * @ public normal_behavior
+     * 
+     * @ ensures \result == null;
+     * 
+     * @
+     */
     @Override
     public Void execute() {
         System.out.println("================================================================");

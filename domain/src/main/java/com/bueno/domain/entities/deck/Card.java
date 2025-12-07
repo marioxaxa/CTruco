@@ -24,41 +24,96 @@ import java.util.Objects;
 
 public final class Card {
 
+    // @ public invariant rank != null;
+    // @ public invariant suit != null;
+    // @ public invariant cache != null;
+
     private static final Card[] cache = new Card[41];
     private final Suit suit;
     private final Rank rank;
 
     private Card(Rank rank, Suit suit) {
         this.rank = rank;
-        this.suit  = suit;
+        this.suit = suit;
     }
 
-    public static Card of(Rank rank, Suit suit){
+    /*
+     * @
+     * 
+     * @ public normal_behavior
+     * 
+     * @ requires rank != null;
+     * 
+     * @ requires suit != null;
+     * 
+     * @ ensures \result != null;
+     * 
+     * @ ensures \result.rank == rank;
+     * 
+     * @ ensures \result.suit == suit;
+     * 
+     * @
+     */
+    public static Card of(Rank rank, Suit suit) {
         Objects.requireNonNull(rank);
         Objects.requireNonNull(suit);
-        if(rank == Rank.HIDDEN ^ suit == Suit.HIDDEN)
+        if (rank == Rank.HIDDEN ^ suit == Suit.HIDDEN)
             throw new IllegalArgumentException("Both rank and suit must be HIDDEN or none: " + rank + suit);
 
         return fromCache(rank, suit);
     }
 
-    public static Card closed(){
+    /*
+     * @
+     * 
+     * @ public normal_behavior
+     * 
+     * @ ensures \result != null;
+     * 
+     * @ ensures \result.rank == Rank.HIDDEN;
+     * 
+     * @ ensures \result.suit == Suit.HIDDEN;
+     * 
+     * @
+     */
+    public static Card closed() {
         return fromCache(Rank.HIDDEN, Suit.HIDDEN);
     }
 
-    private static Card fromCache(Rank rank, Suit suit){
+    private static Card fromCache(Rank rank, Suit suit) {
         int rankValue = rank.value();
         int suitValue = suit.value();
         int cachePosition = rankValue == 0 || suitValue == 0 ? 0 : (rankValue - 1) * 4 + suitValue;
 
-        if(cache[cachePosition] == null) cache[cachePosition] = new Card(rank, suit);
+        if (cache[cachePosition] == null)
+            cache[cachePosition] = new Card(rank, suit);
         return cache[cachePosition];
     }
 
-    public int compareValueTo(Card otherCard, Card vira){
+    /*
+     * @
+     * 
+     * @ public normal_behavior
+     * 
+     * @ requires otherCard != null;
+     * 
+     * @ requires vira != null;
+     * 
+     * @
+     */
+    public int compareValueTo(Card otherCard, Card vira) {
         return this.getRelativeValue(vira) - otherCard.getRelativeValue(vira);
     }
 
+    /*
+     * @
+     * 
+     * @ public normal_behavior
+     * 
+     * @ requires vira != null;
+     * 
+     * @
+     */
     public int getRelativeValue(Card vira) {
         if (isManilha(vira))
             return switch (suit) {
@@ -68,7 +123,8 @@ public final class Card {
                 case CLUBS -> 13;
                 case HIDDEN -> throw new IllegalStateException("Closed card can not be manilha!");
             };
-        if(manilhaPositionInfluencesInCardValue(vira)) return rank.value() - 1;
+        if (manilhaPositionInfluencesInCardValue(vira))
+            return rank.value() - 1;
         return rank.value();
     }
 
@@ -78,9 +134,19 @@ public final class Card {
         return manilhaRankWasLowerThanCardRank || manilhaIsThree;
     }
 
-    public boolean isManilha(Card vira){
+    /*
+     * @
+     * 
+     * @ public normal_behavior
+     * 
+     * @ requires vira != null;
+     * 
+     * @
+     */
+    public boolean isManilha(Card vira) {
         return getRank() == vira.getRank().next();
     }
+
     public boolean isClosed() {
         return rank.equals(Rank.HIDDEN) && suit.equals(Suit.HIDDEN);
     }
@@ -95,14 +161,16 @@ public final class Card {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         Card card = (Card) o;
         return rank == card.rank && suit == card.suit;
     }
 
     @Override
     public String toString() {
-        return "["+ rank + suit +"]";
+        return "[" + rank + suit + "]";
     }
 }

@@ -21,6 +21,13 @@
 package com.bueno.domain.entities.game;
 
 public class GameRuleViolationException extends RuntimeException {
+    /*
+     * @ public normal_behavior
+     * 
+     * @ ensures getMessage() == message;
+     * 
+     * @
+     */
     public GameRuleViolationException(String message) {
         super(message);
     }

@@ -25,33 +25,85 @@ import java.util.Collections;
 import java.util.List;
 
 public class Deck {
+    /*
+     * @ public invariant cards != null;
+     * 
+     * @
+     */
     private final List<Card> cards = new ArrayList<>();
 
     public Deck() {
         generateSortedDeck();
     }
 
+    /*
+     * @ private normal_behavior
+     * 
+     * @ ensures cards.size() == 40;
+     * 
+     * @
+     */
     private void generateSortedDeck() {
-        for(Rank rank : Rank.values())
-            for(Suit suit : Suit.values())
-                if(rank != Rank.HIDDEN && suit != Suit.HIDDEN)
+        for (Rank rank : Rank.values())
+            for (Suit suit : Suit.values())
+                if (rank != Rank.HIDDEN && suit != Suit.HIDDEN)
                     cards.add(Card.of(rank, suit));
     }
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires numberOfCards > 0 && numberOfCards <= cards.size();
+     * 
+     * @ ensures \result != null;
+     * 
+     * @ ensures \result.size() == numberOfCards;
+     * 
+     * @ ensures cards.size() == \old(cards.size()) - numberOfCards;
+     * 
+     * @
+     */
     public List<Card> take(int numberOfCards) {
         final List<Card> cardsTaken = new ArrayList<>(cards.subList(0, numberOfCards));
         cards.removeAll(cardsTaken);
         return cardsTaken;
     }
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires !cards.isEmpty();
+     * 
+     * @ ensures \result != null;
+     * 
+     * @ ensures cards.size() == \old(cards.size()) - 1;
+     * 
+     * @
+     */
     public Card takeOne() {
         return cards.remove(0);
     }
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ ensures cards.size() == \old(cards.size());
+     * 
+     * @
+     */
     public void shuffle() {
         Collections.shuffle(cards);
     }
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ ensures \result == cards.size();
+     * 
+     * @ ensures \result >= 0;
+     * 
+     * @
+     */
     public int size() {
         return cards.size();
     }

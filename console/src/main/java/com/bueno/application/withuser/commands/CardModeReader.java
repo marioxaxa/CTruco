@@ -29,15 +29,26 @@ import static com.bueno.application.withuser.commands.CardModeReader.CardMode.DI
 
 public class CardModeReader implements Command<CardModeReader.CardMode> {
 
-    public enum CardMode{OPEN, DISCARDED}
+    public enum CardMode {
+        OPEN, DISCARDED
+    }
 
     public CardModeReader() {
     }
 
+    /*
+     * @ also
+     * 
+     * @ public normal_behavior
+     * 
+     * @ ensures \result != null;
+     * 
+     * @
+     */
     @Override
     public CardMode execute() {
         var scanner = new Scanner(System.in);
-        while (true){
+        while (true) {
             System.out.print("Descartar [s, n] > ");
 
             final var choice = scanner.nextLine();
@@ -45,9 +56,9 @@ public class CardModeReader implements Command<CardModeReader.CardMode> {
                 printErrorMessage("Valor inválido!");
                 continue;
             }
-            if (choice.equalsIgnoreCase("n")) return OPEN;
+            if (choice.equalsIgnoreCase("n"))
+                return OPEN;
             return DISCARDED;
         }
     }
 }
-

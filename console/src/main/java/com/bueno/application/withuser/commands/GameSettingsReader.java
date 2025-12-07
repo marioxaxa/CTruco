@@ -36,6 +36,15 @@ import java.util.UUID;
 @SuppressWarnings("UnstableApiUsage")
 public class GameSettingsReader implements Command<CreateDetachedDto> {
 
+    /*
+     * @ also
+     * 
+     * @ public normal_behavior
+     * 
+     * @ ensures \result != null;
+     * 
+     * @
+     */
     @Override
     public CreateDetachedDto execute() {
         Scanner scanner = new Scanner(System.in);
@@ -46,6 +55,13 @@ public class GameSettingsReader implements Command<CreateDetachedDto> {
         return new CreateDetachedDto(UUID.randomUUID(), username, bot);
     }
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ ensures \result != null;
+     * 
+     * @
+     */
     private String readBotName() {
         final RemoteBotRepository repository = new RemoteBotRepositoryImpl();
         final RemoteBotApiAdapter botApi = new RemoteBotApiAdapter();

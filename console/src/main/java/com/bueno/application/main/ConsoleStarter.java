@@ -12,6 +12,17 @@ import java.sql.SQLException;
 
 public class ConsoleStarter {
 
+    /*
+     * @ public behavior
+     * 
+     * @ requires args != null;
+     * 
+     * @ requires \nonnullelements(args);
+     * 
+     * @ signals (SQLException e) true;
+     * 
+     * @
+     */
     public static void main(String[] args) throws SQLException {
         DataBaseBuilder dataBaseBuilder = new DataBaseBuilder();
         dataBaseBuilder.buildDataBaseIfMissing();
@@ -21,11 +32,25 @@ public class ConsoleStarter {
         console.menu();
     }
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ ensures true;
+     * 
+     * @
+     */
     private void printInitialMenu() {
         InitialMenuPrinter init = new InitialMenuPrinter();
         init.execute();
     }
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ ensures true;
+     * 
+     * @
+     */
     private void menu() {
         UserRepository userRepository = new UserRepositoryImpl();
         RemoteBotRepositoryImpl RemoteBotRepository = new RemoteBotRepositoryImpl();

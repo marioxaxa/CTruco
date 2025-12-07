@@ -8,12 +8,33 @@ import java.util.Scanner;
 
 public class BotOptionReader implements Command<Integer> {
 
+    /* @ public invariant botNames != null; @ */
     List<String> botNames;
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires botNames != null;
+     * 
+     * @ ensures this.botNames == botNames;
+     * 
+     * @
+     */
     public BotOptionReader(List<String> botNames) {
         this.botNames = botNames;
     }
 
+    /*
+     * @ also
+     * 
+     * @ public normal_behavior
+     * 
+     * @ ensures \result != null;
+     * 
+     * @ ensures \result >= 1 && \result <= botNames.size();
+     * 
+     * @
+     */
     @Override
     public Integer execute() {
         Scanner scanner = new Scanner(System.in);

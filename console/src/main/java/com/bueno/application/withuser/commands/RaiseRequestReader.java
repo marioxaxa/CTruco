@@ -27,15 +27,47 @@ import java.util.Scanner;
 
 public class RaiseRequestReader implements Command<RaiseRequestReader.RaiseChoice> {
 
+    /*
+     * @ public invariant mainCli != null;
+     * 
+     * @ public invariant nextScore > 0;
+     * 
+     * @
+     */
     private final PlayAgainstBots mainCli;
     private final int nextScore;
-    public enum RaiseChoice {REQUEST, NOT_REQUEST}
 
+    public enum RaiseChoice {
+        REQUEST, NOT_REQUEST
+    }
+
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires mainCli != null;
+     * 
+     * @ requires nextScore > 0;
+     * 
+     * @ ensures this.mainCli == mainCli;
+     * 
+     * @ ensures this.nextScore == nextScore;
+     * 
+     * @
+     */
     public RaiseRequestReader(PlayAgainstBots mainCli, int nextScore) {
         this.mainCli = mainCli;
         this.nextScore = nextScore;
     }
 
+    /*
+     * @ also
+     * 
+     * @ public normal_behavior
+     * 
+     * @ ensures \result != null;
+     * 
+     * @
+     */
     @Override
     public RaiseChoice execute() {
         var scanner = new Scanner(System.in);

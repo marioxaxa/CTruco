@@ -43,6 +43,19 @@ import static com.bueno.application.withuser.commands.RaiseRequestReader.RaiseCh
 
 public class PlayAgainstBots {
 
+    /*
+     * @ public invariant gameUseCase != null;
+     * 
+     * @ public invariant playCardUseCase != null;
+     * 
+     * @ public invariant pointsProposalUseCase != null;
+     * 
+     * @ public invariant handleIntelUseCase != null;
+     * 
+     * @ public invariant missingIntel != null;
+     * 
+     * @
+     */
     private final CreateGameUseCase gameUseCase;
     private final PlayCardUseCase playCardUseCase;
     private final PointsProposalUseCase pointsProposalUseCase;
@@ -51,18 +64,35 @@ public class PlayAgainstBots {
     private IntelDto lastIntel;
     private UUID userUUID;
 
-//    public static void main(String[] args) {
-//        LogManager.getLogManager().reset();
-//        final var cli = new PlayAgainstBots();
-//        cli.createGame();
-//        cli.play();
-//    }
+    // public static void main(String[] args) {
+    // LogManager.getLogManager().reset();
+    // final var cli = new PlayAgainstBots();
+    // cli.createGame();
+    // cli.play();
+    // }
 
     public void gameCLIStarter() {
         createGame();
         play();
     }
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires providerService != null;
+     * 
+     * @ ensures this.gameUseCase != null;
+     * 
+     * @ ensures this.playCardUseCase != null;
+     * 
+     * @ ensures this.pointsProposalUseCase != null;
+     * 
+     * @ ensures this.handleIntelUseCase != null;
+     * 
+     * @ ensures this.missingIntel != null;
+     * 
+     * @
+     */
     public PlayAgainstBots(BotManagerService providerService) {
         final var gameRepo = new GameRepositoryInMemoryImpl();
         final var remoteBotRepo = new RemoteBotRepositoryImpl();
@@ -77,18 +107,32 @@ public class PlayAgainstBots {
     private void play() {
         while (!lastIntel.isGameDone()) {
             handleMaoDeOnzeResponse();
-            if (isCurrentHandDone(lastIntel)) continue;
+            if (isCurrentHandDone(lastIntel))
+                continue;
             handleRaiseRequest();
-            if (isCurrentHandDone(lastIntel)) continue;
+            if (isCurrentHandDone(lastIntel))
+                continue;
             handleCardPlaying();
-            if (isCurrentHandDone(lastIntel)) continue;
+            if (isCurrentHandDone(lastIntel))
+                continue;
             handleRaiseResponse();
         }
     }
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires intel != null;
+     * 
+     * @ ensures \result == (intel.event() != null &&
+     * intel.event().equals("NEW_HAND"));
+     * 
+     * @
+     */
     private boolean isCurrentHandDone(IntelDto intel) {
         final String event = intel.event();
-        if (event == null) return false;
+        if (event == null)
+            return false;
         return event.equals("NEW_HAND");
     }
 
@@ -106,7 +150,8 @@ public class PlayAgainstBots {
         final Set<String> notAllowedActions = Set.of();
 
         updateIntel();
-        if (canNotPerform(allowedActions, notAllowedActions)) return;
+        if (canNotPerform(allowedActions, notAllowedActions))
+            return;
 
         final var ownedCards = handleIntelUseCase.ownedCards(userUUID).cards();
         final var cardReader = new CardReader(this, ownedCards);
@@ -115,23 +160,40 @@ public class PlayAgainstBots {
         final var mode = lastIntel.roundsPlayed() == 0 ? OPEN : cardModeReader.execute();
 
         final var requestModel = new PlayCardDto(userUUID, card);
-        if (mode == OPEN) playCardUseCase.playCard(requestModel);
-        else playCardUseCase.discard(requestModel);
+        if (mode == OPEN)
+            playCardUseCase.playCard(requestModel);
+        else
+            playCardUseCase.discard(requestModel);
     }
 
     private void updateIntel() {
         var responseModel = handleIntelUseCase.findIntelSince(userUUID, lastIntel.timestamp());
         missingIntel.addAll(responseModel.intelSinceBaseTimestamp());
-        if (missingIntel.isEmpty()) missingIntel.add(lastIntel);
-        else lastIntel = missingIntel.get(missingIntel.size() - 1);
+        if (missingIntel.isEmpty())
+            missingIntel.add(lastIntel);
+        else
+            lastIntel = missingIntel.get(missingIntel.size() - 1);
     }
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires allowedActions != null;
+     * 
+     * @ requires notAllowedActions != null;
+     * 
+     * @ ensures true;
+     * 
+     * @
+     */
     private boolean canNotPerform(Set<String> allowedActions, Set<String> notAllowedActions) {
         final UUID possibleUuid = lastIntel.currentPlayerUuid();
-        if (possibleUuid == null) return true;
+        if (possibleUuid == null)
+            return true;
         final boolean isCurrentPlayer = possibleUuid.equals(userUUID);
         final boolean isPerformingAllowedAction = lastIntel.possibleActions().containsAll(allowedActions);
-        final boolean isNotPerformingAnyNotAllowed = Collections.disjoint(lastIntel.possibleActions(), notAllowedActions);
+        final boolean isNotPerformingAnyNotAllowed = Collections.disjoint(lastIntel.possibleActions(),
+                notAllowedActions);
         return !isCurrentPlayer || !isPerformingAllowedAction || !isNotPerformingAnyNotAllowed;
     }
 
@@ -140,12 +202,23 @@ public class PlayAgainstBots {
         final Set<String> notAllowedActions = Set.of("QUIT");
 
         updateIntel();
-        if (canNotPerform(allowedActions, notAllowedActions)) return;
+        if (canNotPerform(allowedActions, notAllowedActions))
+            return;
 
         var requestReader = new RaiseRequestReader(this, nextScore(lastIntel.handPoints()));
-        if (requestReader.execute() == REQUEST) pointsProposalUseCase.raise(userUUID);
+        if (requestReader.execute() == REQUEST)
+            pointsProposalUseCase.raise(userUUID);
     }
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires score >= 1;
+     * 
+     * @ ensures \result == (score == 1 ? 3 : score + 3);
+     * 
+     * @
+     */
     private int nextScore(int score) {
         return score == 1 ? 3 : score + 3;
     }
@@ -155,7 +228,8 @@ public class PlayAgainstBots {
         final Set<String> notAllowedActions = Set.of();
 
         updateIntel();
-        if (canNotPerform(allowedActions, notAllowedActions)) return;
+        if (canNotPerform(allowedActions, notAllowedActions))
+            return;
 
         var responseReader = new RaiseResponseReader(this, nextScore(lastIntel.handPoints()));
         switch (responseReader.execute()) {
@@ -167,7 +241,8 @@ public class PlayAgainstBots {
 
     private void handleMaoDeOnzeResponse() {
         updateIntel();
-        if (!lastIntel.isMaoDeOnze()) return;
+        if (!lastIntel.isMaoDeOnze())
+            return;
 
         var responseReader = new MaoDeOnzeResponseReader(this);
         if (responseReader.execute() == ACCEPT) {
@@ -177,12 +252,22 @@ public class PlayAgainstBots {
     }
 
     public void printGameIntel(int delayInMilliseconds) {
-        if (missingIntel.size() == 1) delayInMilliseconds = 0;
+        if (missingIntel.size() == 1)
+            delayInMilliseconds = 0;
         final List<CardDto> ownedCards = handleIntelUseCase.ownedCards(userUUID).cards();
         var intelPrinter = new IntelPrinter(userUUID, ownedCards, missingIntel, delayInMilliseconds);
         intelPrinter.execute();
     }
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires lastIntel != null;
+     * 
+     * @ ensures \result == lastIntel.currentOpponentUsername();
+     * 
+     * @
+     */
     public String getOpponentUsername() {
         return lastIntel.currentOpponentUsername();
     }

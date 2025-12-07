@@ -6,6 +6,21 @@ import java.util.Scanner;
 
 public class NumberOfSimulationsReader implements Command<Integer> {
 
+    /*
+     * @ also
+     * 
+     * @ public normal_behavior
+     * 
+     * @ ensures \result != null;
+     * 
+     * @ public exceptional_behavior
+     * 
+     * @ signals (java.util.InputMismatchException) true;
+     * 
+     * @ signals (java.util.NoSuchElementException) true;
+     * 
+     * @
+     */
     @Override
     public Integer execute() {
         final var scanner = new Scanner(System.in);

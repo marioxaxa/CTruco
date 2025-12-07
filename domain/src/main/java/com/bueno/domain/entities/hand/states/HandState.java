@@ -24,12 +24,63 @@ import com.bueno.domain.entities.deck.Card;
 import com.bueno.domain.entities.player.Player;
 
 public interface HandState {
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires player != null;
+     * 
+     * @ requires card != null;
+     * 
+     * @
+     */
     void playFirstCard(Player player, Card card);
+
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires player != null;
+     * 
+     * @ requires card != null;
+     * 
+     * @
+     */
     void playSecondCard(Player player, Card card);
+
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires responder != null;
+     * 
+     * @
+     */
     void accept(Player responder);
+
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires responder != null;
+     * 
+     * @
+     */
     void quit(Player responder);
+
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires requester != null;
+     * 
+     * @
+     */
     void raise(Player requester);
-    default String className(){
+
+    /*
+     * @ public normal_behavior
+     * 
+     * @ ensures \result != null;
+     * 
+     * @
+     */
+    default String className() {
         return getClass().getSimpleName().toUpperCase();
     }
 }

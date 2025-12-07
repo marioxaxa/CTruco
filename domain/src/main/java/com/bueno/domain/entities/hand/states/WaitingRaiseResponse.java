@@ -32,25 +32,68 @@ import java.util.EnumSet;
 
 public class WaitingRaiseResponse implements HandState {
 
+    /*
+     * @ public invariant context != null;
+     * 
+     * @
+     */
+    /* @ spec_public @ */
     private final Hand context;
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires context != null;
+     * 
+     * @ ensures this.context == context;
+     * 
+     * @
+     */
     public WaitingRaiseResponse(Hand context) {
         this.context = context;
         final EnumSet<PossibleAction> actions = EnumSet.of(PossibleAction.QUIT, PossibleAction.ACCEPT);
-        if(context.canRaiseBet()) actions.add(PossibleAction.RAISE);
+        if (context.canRaiseBet())
+            actions.add(PossibleAction.RAISE);
         this.context.setPossibleActions(actions);
     }
 
+    /*
+     * @ also
+     * 
+     * @ public exceptional_behavior
+     * 
+     * @ signals (IllegalStateException e) true;
+     * 
+     * @
+     */
     @Override
     public void playFirstCard(Player player, Card card) {
         throw new IllegalStateException("Can not play card until bet is responded.");
     }
 
+    /*
+     * @ also
+     * 
+     * @ public exceptional_behavior
+     * 
+     * @ signals (IllegalStateException e) true;
+     * 
+     * @
+     */
     @Override
     public void playSecondCard(Player player, Card card) {
         throw new IllegalStateException("Can not play card until bet is responded.");
     }
 
+    /*
+     * @ also
+     * 
+     * @ public normal_behavior
+     * 
+     * @ requires responder != null;
+     * 
+     * @
+     */
     @Override
     public void accept(Player responder) {
         context.setPoints(context.getPointsProposal());
@@ -60,26 +103,59 @@ public class WaitingRaiseResponse implements HandState {
         context.updateHistory(Event.ACCEPT);
     }
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ ensures \result != null;
+     * 
+     * @
+     */
     private Player defineCurrentPlayer() {
         return context.getCardToPlayAgainst().isEmpty() ? context.getFirstToPlay() : context.getLastToPlay();
     }
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ ensures \result != null;
+     * 
+     * @
+     */
     private HandState defineNextState() {
         return context.getCardToPlayAgainst().isPresent() ? new OneCard(context) : new NoCard(context);
     }
 
+    /*
+     * @ also
+     * 
+     * @ public normal_behavior
+     * 
+     * @ requires responder != null;
+     * 
+     * @
+     */
     @Override
     public void quit(Player responder) {
-        //context.setLastBetRaiser(null);
-        //context.removePointsProposal();
+        // context.setLastBetRaiser(null);
+        // context.removePointsProposal();
         context.setResult(HandResult.of(context.getOpponentOf(responder), context.getPoints()));
         context.setState(new Done(context));
         context.updateHistory(Event.QUIT);
     }
 
+    /*
+     * @ also
+     * 
+     * @ public normal_behavior
+     * 
+     * @ requires requester != null;
+     * 
+     * @
+     */
     @Override
     public void raise(Player requester) {
-        final HandPoints score = context.getPointsProposal() != null ? context.getPointsProposal() : context.getPoints();
+        final HandPoints score = context.getPointsProposal() != null ? context.getPointsProposal()
+                : context.getPoints();
         context.setPoints(score);
         context.addPointsProposal();
         context.setLastBetRaiser(requester);

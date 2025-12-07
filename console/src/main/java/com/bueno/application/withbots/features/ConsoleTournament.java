@@ -7,64 +7,104 @@ import com.bueno.domain.usecases.tournament.usecase.*;
 import java.util.*;
 
 public class ConsoleTournament {
+    /*
+     * @ public invariant tournamentProvider != null;
+     * 
+     * @ public invariant playUseCase != null;
+     * 
+     * @ public invariant refreshUseCase != null;
+     * 
+     * @
+     */
     private final CreateTournamentUseCase tournamentProvider;
     private final PlayTournamentMatchesUseCase playUseCase;
     private final RefreshTournamentUseCase refreshUseCase;
     private TournamentDTO dto;
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires tournamentProvider != null;
+     * 
+     * @ requires playUseCase != null;
+     * 
+     * @ requires refreshUseCase != null;
+     * 
+     * @ ensures this.tournamentProvider == tournamentProvider;
+     * 
+     * @ ensures this.playUseCase == playUseCase;
+     * 
+     * @ ensures this.refreshUseCase == refreshUseCase;
+     * 
+     * @
+     */
     public ConsoleTournament(CreateTournamentUseCase tournamentProvider,
-                             PlayTournamentMatchesUseCase playUseCase,
-                             RefreshTournamentUseCase refreshUseCase) {
+            PlayTournamentMatchesUseCase playUseCase,
+            RefreshTournamentUseCase refreshUseCase) {
         this.tournamentProvider = tournamentProvider;
         this.playUseCase = playUseCase;
         this.refreshUseCase = refreshUseCase;
     }
 
-//    public void startTournament(List<String> bots, int times) {
-//        if (bots.size() != 16 && bots.size() != 8 && bots.size() != 4) {
-//            System.out.println("invalid number of participants");
-//            return;
-//        }
-//        List<String> participants = new ArrayList<>(bots);
-//        Collections.shuffle(participants);
-//        dto = tournamentProvider.createTournament(participants, participants.size(), times);
-//        System.out.println("ALL Matches: ");
-//        dto.matchesDTO().forEach((matchDTO) -> System.out.println("Match number: " +
-//                matchDTO.matchNumber() +
-//                " " +
-//                matchDTO.p1Name() +
-//                " VS " +
-//                matchDTO.p2Name()
-//        ));
-//    }
-//
-//    public void tournamentMenu() {
-//        Objects.requireNonNull(dto, "tournament menu requires tournament data");
-//        MatchDTO finalMatch = dto.matchesDTO()
-//                .stream()
-//                .filter(matchDTO -> matchDTO.next() == null).findFirst().orElseThrow();
-//
-//        while (finalMatch.winnerName() == null) {
-//            List<MatchDTO> availableOnes = playUseCase.getAllAvailableMatches(dto);
-//            System.out.println("Available matches: " + availableOnes.size());
-//            availableOnes.forEach(matchDTO -> System.out.println("Match number: " +
-//                    matchDTO.matchNumber() +
-//                    "  " +
-//                    matchDTO.p1Name() +
-//                    " VS " +
-//                    matchDTO.p2Name()));
-//            final int matchNumber = chooseMatch();
-//            playUseCase.playOne(dto.uuid(), matchNumber, dto.times());
-//            refreshUseCase.refresh(dto.uuid());
-//
-//
-//            finalMatch = dto.matchesDTO()
-//                    .stream()
-//                    .filter(matchDTO -> matchDTO.next() == null).findFirst().orElseThrow();
-//        }
-//        System.out.println("Ganhador: " + finalMatch.winnerName());
-//    }
+    // public void startTournament(List<String> bots, int times) {
+    // if (bots.size() != 16 && bots.size() != 8 && bots.size() != 4) {
+    // System.out.println("invalid number of participants");
+    // return;
+    // }
+    // List<String> participants = new ArrayList<>(bots);
+    // Collections.shuffle(participants);
+    // dto = tournamentProvider.createTournament(participants, participants.size(),
+    // times);
+    // System.out.println("ALL Matches: ");
+    // dto.matchesDTO().forEach((matchDTO) -> System.out.println("Match number: " +
+    // matchDTO.matchNumber() +
+    // " " +
+    // matchDTO.p1Name() +
+    // " VS " +
+    // matchDTO.p2Name()
+    // ));
+    // }
+    //
+    // public void tournamentMenu() {
+    // Objects.requireNonNull(dto, "tournament menu requires tournament data");
+    // MatchDTO finalMatch = dto.matchesDTO()
+    // .stream()
+    // .filter(matchDTO -> matchDTO.next() == null).findFirst().orElseThrow();
+    //
+    // while (finalMatch.winnerName() == null) {
+    // List<MatchDTO> availableOnes = playUseCase.getAllAvailableMatches(dto);
+    // System.out.println("Available matches: " + availableOnes.size());
+    // availableOnes.forEach(matchDTO -> System.out.println("Match number: " +
+    // matchDTO.matchNumber() +
+    // " " +
+    // matchDTO.p1Name() +
+    // " VS " +
+    // matchDTO.p2Name()));
+    // final int matchNumber = chooseMatch();
+    // playUseCase.playOne(dto.uuid(), matchNumber, dto.times());
+    // refreshUseCase.refresh(dto.uuid());
+    //
+    //
+    // finalMatch = dto.matchesDTO()
+    // .stream()
+    // .filter(matchDTO -> matchDTO.next() == null).findFirst().orElseThrow();
+    // }
+    // System.out.println("Ganhador: " + finalMatch.winnerName());
+    // }
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ ensures \result >= -2147483648 && \result <= 2147483647;
+     * 
+     * @ public exceptional_behavior
+     * 
+     * @ signals (java.util.InputMismatchException) true;
+     * 
+     * @ signals (java.util.NoSuchElementException) true;
+     * 
+     * @
+     */
     private int chooseMatch() {
         Scanner scan = new Scanner(System.in);
         System.out.println("Please enter the match number: ");

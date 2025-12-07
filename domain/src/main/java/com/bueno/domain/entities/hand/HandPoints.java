@@ -27,14 +27,46 @@ import java.util.Arrays;
 public enum HandPoints {
     ZERO(0), ONE(1), THREE(3), SIX(6), NINE(9), TWELVE(12);
 
+    /* @ spec_public @ */
     private final int points;
 
     HandPoints(int points) {
         this.points = points;
     }
 
-    public HandPoints increase() {
-        return switch (this){
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires this == ONE;
+     * 
+     * @ ensures \result == THREE;
+     * 
+     * @ public normal_behavior
+     * 
+     * @ requires this == THREE;
+     * 
+     * @ ensures \result == SIX;
+     * 
+     * @ public normal_behavior
+     * 
+     * @ requires this == SIX;
+     * 
+     * @ ensures \result == NINE;
+     * 
+     * @ public normal_behavior
+     * 
+     * @ requires this == NINE;
+     * 
+     * @ ensures \result == TWELVE;
+     * 
+     * @ public exceptional_behavior
+     * 
+     * @ signals (GameRuleViolationException e) this == ZERO || this == TWELVE;
+     * 
+     * @
+     */
+    public /* @ pure @ */ HandPoints increase() {
+        return switch (this) {
             case ONE -> THREE;
             case THREE -> SIX;
             case SIX -> NINE;
@@ -43,11 +75,32 @@ public enum HandPoints {
         };
     }
 
-    public int get() {
+    /*
+     * @ public normal_behavior
+     * 
+     * @ ensures \result == points;
+     * 
+     * @
+     */
+    public /* @ pure @ */ int get() {
         return points;
     }
 
-    public static HandPoints fromIntValue(Integer points){
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires (\exists HandPoints hp; hp.points == points);
+     * 
+     * @ ensures \result.points == points;
+     * 
+     * @ public exceptional_behavior
+     * 
+     * @ signals (IllegalArgumentException e) !(\exists HandPoints hp; hp.points ==
+     * points);
+     * 
+     * @
+     */
+    public static /* @ pure @ */ HandPoints fromIntValue(Integer points) {
         return Arrays.stream(values())
                 .filter(value -> value.points == points)
                 .findFirst()

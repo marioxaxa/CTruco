@@ -29,31 +29,87 @@ import java.util.EnumSet;
 
 public class Done implements HandState {
 
-    public Done(Hand context){
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires context != null;
+     * 
+     * @ ensures context.getCurrentPlayer() == null;
+     * 
+     * @ ensures context.getPossibleActions().isEmpty();
+     * 
+     * @
+     */
+    public Done(Hand context) {
         context.setCurrentPlayer(null);
         context.setPossibleActions(EnumSet.noneOf(PossibleAction.class));
     }
 
+    /*
+     * @ also
+     * 
+     * @ public exceptional_behavior
+     * 
+     * @ signals (IllegalStateException e) true;
+     * 
+     * @
+     */
     @Override
     public void playFirstCard(Player player, Card card) {
         throw new IllegalStateException("Can not play card because hand is done.");
     }
 
+    /*
+     * @ also
+     * 
+     * @ public exceptional_behavior
+     * 
+     * @ signals (IllegalStateException e) true;
+     * 
+     * @
+     */
     @Override
     public void playSecondCard(Player player, Card card) {
         throw new IllegalStateException("Can not play card because hand is done.");
     }
 
+    /*
+     * @ also
+     * 
+     * @ public exceptional_behavior
+     * 
+     * @ signals (IllegalStateException e) true;
+     * 
+     * @
+     */
     @Override
     public void accept(Player responder) {
         throw new IllegalStateException("Can not accept bet because hand is done.");
     }
 
+    /*
+     * @ also
+     * 
+     * @ public exceptional_behavior
+     * 
+     * @ signals (IllegalStateException e) true;
+     * 
+     * @
+     */
     @Override
     public void quit(Player responder) {
         throw new IllegalStateException("Can not quit hand because hand is done.");
     }
 
+    /*
+     * @ also
+     * 
+     * @ public exceptional_behavior
+     * 
+     * @ signals (IllegalStateException e) true;
+     * 
+     * @
+     */
     @Override
     public void raise(Player requester) {
         throw new IllegalStateException("Can not bet because hand is done.");

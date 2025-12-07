@@ -15,11 +15,9 @@
     <modules>
         <module>domain</module>
         <module>console</module>
-        <module>desktop</module>
         <module>persistence</module>
         <module>bot-spi</module>
         <module>bot-impl</module>
-        <module>web</module>
     </modules>
 
     <parent>

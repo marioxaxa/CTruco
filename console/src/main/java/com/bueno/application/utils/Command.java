@@ -24,10 +24,24 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 
-public interface Command <T>{
+public interface Command<T> {
 
+    /*
+     * @ public behavior
+     * 
+     * @ signals (Exception e) true;
+     * 
+     * @
+     */
     T execute();
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires message != null;
+     * 
+     * @
+     */
     default void printErrorMessage(String message) {
         Scanner scanner = new Scanner(System.in);
         cls();
@@ -37,17 +51,63 @@ public interface Command <T>{
     }
 
     default void cls() {
-        for (int i = 0; i < 15; ++i) System.out.println();
+        for (int i = 0; i < 15; ++i)
+            System.out.println();
     }
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires choice != null;
+     * 
+     * @ requires options != null;
+     * 
+     * @ requires \nonnullelements(options);
+     * 
+     * @ ensures \result == (\forall int i; 0 <= i && i < options.length;
+     * !options[i].equalsIgnoreCase(choice));
+     * 
+     * @
+     */
     default boolean isValidChoice(String choice, String... options) {
         return isValidChoice(choice, Arrays.stream(options).toList());
     }
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires choice != null;
+     * 
+     * @ requires options != null;
+     * 
+     * @ ensures \result == (\forall int i; 0 <= i && i < options.size();
+     * !options.get(i).equalsIgnoreCase(choice));
+     * 
+     * @
+     */
     default boolean isValidChoice(String choice, List<String> options) {
         return options.stream().noneMatch(choice::equalsIgnoreCase);
     }
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires nextScore == 3 || nextScore == 6 || nextScore == 9 || nextScore ==
+     * 12;
+     * 
+     * @ ensures \result != null;
+     * 
+     * @ also
+     * 
+     * @ public exceptional_behavior
+     * 
+     * @ requires nextScore != 3 && nextScore != 6 && nextScore != 9 && nextScore !=
+     * 12;
+     * 
+     * @ signals_only IllegalStateException;
+     * 
+     * @
+     */
     default String toRequestString(int nextScore) {
         return switch (nextScore) {
             case 3 -> "truco";

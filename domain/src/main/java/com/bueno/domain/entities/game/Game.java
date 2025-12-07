@@ -35,6 +35,19 @@ import java.util.stream.Collectors;
 
 public class Game {
 
+    /*
+     * @ public invariant uuid != null;
+     * 
+     * @ public invariant player1 != null;
+     * 
+     * @ public invariant player2 != null;
+     * 
+     * @ public invariant hands != null;
+     * 
+     * @ public invariant timestamp != null;
+     * 
+     * @
+     */
     private final UUID uuid;
     private Deck deck;
     private final LocalDateTime timestamp;
@@ -53,6 +66,27 @@ public class Game {
         this(player1, player2, UUID.randomUUID(), deck);
     }
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires player1 != null;
+     * 
+     * @ requires player2 != null;
+     * 
+     * @ requires deck != null;
+     * 
+     * @ requires uuid != null;
+     * 
+     * @ ensures this.player1 == player1;
+     * 
+     * @ ensures this.player2 == player2;
+     * 
+     * @ ensures this.deck == deck;
+     * 
+     * @ ensures this.uuid == uuid;
+     * 
+     * @
+     */
     public Game(Player player1, Player player2, UUID uuid, Deck deck) {
         this.deck = deck;
         this.player1 = Objects.requireNonNull(player1);
@@ -64,7 +98,7 @@ public class Game {
     }
 
     public Game(UUID uuid, LocalDateTime timestamp, Player player1, Player player2, Player firstToPlay,
-                Player lastToPlay, List<Hand> hands) {
+            Player lastToPlay, List<Hand> hands) {
         this.uuid = uuid;
         this.timestamp = timestamp;
         this.player1 = player1;
@@ -74,10 +108,20 @@ public class Game {
         this.hands = new ArrayList<>(hands);
     }
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ ensures deck != null;
+     * 
+     * @ ensures hands.size() == \old(hands.size()) + 1;
+     * 
+     * @
+     */
     public void prepareNewHand() {
         defineHandPlayingOrder();
 
-        if(deck == null) deck = new Deck();
+        if (deck == null)
+            deck = new Deck();
         deck.shuffle();
 
         final Card vira = deck.takeOne();
@@ -93,30 +137,70 @@ public class Game {
         lastToPlay = firstToPlay.equals(player1) ? player2 : player1;
     }
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires currentHand() != null;
+     * 
+     * @ requires currentHand().getResult().isPresent();
+     * 
+     * @
+     */
     public void updateScores() {
         final HandResult result = currentHand().getResult().orElseThrow();
         Optional<Player> winner = result.getWinner();
 
-        if (winner.isEmpty()) return;
-        if (winner.get().equals(player1)) player1.addScore(result.getPoints());
-        else player2.addScore(result.getPoints());
+        if (winner.isEmpty())
+            return;
+        if (winner.get().equals(player1))
+            player1.addScore(result.getPoints());
+        else
+            player2.addScore(result.getPoints());
     }
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ ensures \result.isPresent() == (player1.getScore() == Player.MAX_SCORE ||
+     * player2.getScore() == Player.MAX_SCORE);
+     * 
+     * @
+     */
     public Optional<Player> getWinner() {
-        if (player1.getScore() == Player.MAX_SCORE) return Optional.of(player1);
-        if (player2.getScore() == Player.MAX_SCORE) return Optional.of(player2);
+        if (player1.getScore() == Player.MAX_SCORE)
+            return Optional.of(player1);
+        if (player2.getScore() == Player.MAX_SCORE)
+            return Optional.of(player2);
         return Optional.empty();
     }
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ ensures \result != null;
+     * 
+     * @
+     */
     public Intel getIntel() {
         return isDone() ? Intel.ofGame(this) : currentHand().getLastIntel();
     }
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ ensures \result != null;
+     * 
+     * @ ensures \result.size() >= 0;
+     * 
+     * @
+     */
     public List<Intel> getIntelSince(Instant lastIntelTimestamp) {
         final List<Intel> wholeHistory = hands.stream()
                 .flatMap(hand -> hand.getIntelHistory().stream()).collect(Collectors.toList());
-        if (isDone()) wholeHistory.add(Intel.ofGame(this));
-        if (lastIntelTimestamp == null) return wholeHistory;
+        if (isDone())
+            wholeHistory.add(Intel.ofGame(this));
+        if (lastIntelTimestamp == null)
+            return wholeHistory;
         final Predicate<Intel> isAfter = intel -> intel.timestamp().isAfter(lastIntelTimestamp);
         return wholeHistory.stream().filter(isAfter).collect(Collectors.toList());
     }
@@ -153,8 +237,18 @@ public class Game {
         return hands.size();
     }
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ ensures hands.isEmpty() ==> \result == null;
+     * 
+     * @ ensures !hands.isEmpty() ==> \result != null;
+     * 
+     * @
+     */
     public Hand currentHand() {
-        if (hands.isEmpty()) return null;
+        if (hands.isEmpty())
+            return null;
         int lastHandIndex = hands.size() - 1;
         return hands.get(lastHandIndex);
     }
@@ -169,8 +263,10 @@ public class Game {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         Game game = (Game) o;
         return uuid.equals(game.uuid);
     }

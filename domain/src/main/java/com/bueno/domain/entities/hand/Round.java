@@ -29,18 +29,65 @@ import java.util.Optional;
 
 public class Round {
 
+    /* @ spec_public @ */
     private final Player firstToPlay;
+    /* @ spec_public @ */
     private final Player lastToPlay;
+    /* @ spec_public nullable @ */
     private Player winner;
+    /* @ spec_public @ */
     private final Card vira;
+    /* @ spec_public @ */
     private final Card firstCard;
+    /* @ spec_public @ */
     private final Card lastCard;
+
+    /*
+     * @ public invariant firstToPlay != null;
+     * 
+     * @ public invariant lastToPlay != null;
+     * 
+     * @ public invariant vira != null;
+     * 
+     * @ public invariant firstCard != null;
+     * 
+     * @ public invariant lastCard != null;
+     * 
+     * @
+     */
 
     public Round(Player firstToPlay, Card firstCard, Player lastToPlay, Card lastCard, Card vira) {
         this(firstToPlay, firstCard, lastToPlay, lastCard, vira, null);
         validateCards();
     }
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires firstToPlay != null;
+     * 
+     * @ requires firstCard != null;
+     * 
+     * @ requires lastToPlay != null;
+     * 
+     * @ requires lastCard != null;
+     * 
+     * @ requires vira != null;
+     * 
+     * @ ensures this.firstToPlay == firstToPlay;
+     * 
+     * @ ensures this.lastToPlay == lastToPlay;
+     * 
+     * @ ensures this.firstCard == firstCard;
+     * 
+     * @ ensures this.lastCard == lastCard;
+     * 
+     * @ ensures this.vira == vira;
+     * 
+     * @ ensures this.winner == winner;
+     * 
+     * @
+     */
     public Round(Player firstToPlay, Card firstCard, Player lastToPlay, Card lastCard, Card vira, Player winner) {
         this.firstToPlay = Objects.requireNonNull(firstToPlay, "First to play must not be null!");
         this.lastToPlay = Objects.requireNonNull(lastToPlay, "Second to play must not be null!");
@@ -50,46 +97,121 @@ public class Round {
         this.winner = winner;
     }
 
+    /*
+     * @ private exceptional_behavior
+     * 
+     * @ signals (GameRuleViolationException e) (!firstCard.equals(Card.closed()) &&
+     * firstCard.equals(lastCard)) ||
+     * 
+     * @ (!firstCard.equals(Card.closed()) && firstCard.equals(vira)) ||
+     * 
+     * @ (!lastCard.equals(Card.closed()) && lastCard.equals(vira));
+     * 
+     * @
+     */
     private void validateCards() {
-        if(!firstCard.equals(Card.closed()) && firstCard.equals(lastCard))
+        if (!firstCard.equals(Card.closed()) && firstCard.equals(lastCard))
             throw new GameRuleViolationException("Cards in the deck must be unique!");
-        if(!firstCard.equals(Card.closed()) && firstCard.equals(vira))
+        if (!firstCard.equals(Card.closed()) && firstCard.equals(vira))
             throw new GameRuleViolationException("Cards in the deck must be unique!");
-        if(!lastCard.equals(Card.closed()) && lastCard.equals(vira))
+        if (!lastCard.equals(Card.closed()) && lastCard.equals(vira))
             throw new GameRuleViolationException("Cards in the deck must be unique!");
     }
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ ensures winner == (getWinnerCard().isPresent() ?
+     * (getWinnerCard().get().equals(firstCard) ? firstToPlay : lastToPlay) : null);
+     * 
+     * @
+     */
     public void play() {
         final Optional<Card> possibleWinnerCard = getWinnerCard();
-        this.winner = possibleWinnerCard.map(c -> c.equals(firstCard)? firstToPlay : lastToPlay).orElse(null);
+        this.winner = possibleWinnerCard.map(c -> c.equals(firstCard) ? firstToPlay : lastToPlay).orElse(null);
     }
 
-    public Optional<Card> getWinnerCard(){
-        if (firstCard.compareValueTo(lastCard, vira) == 0) return Optional.empty();
+    /*
+     * @ public normal_behavior
+     * 
+     * @ ensures \result != null;
+     * 
+     * @ ensures \result.isPresent() <==> firstCard.compareValueTo(lastCard, vira)
+     * != 0;
+     * 
+     * @
+     */
+    public /* @ pure @ */ Optional<Card> getWinnerCard() {
+        if (firstCard.compareValueTo(lastCard, vira) == 0)
+            return Optional.empty();
         return firstCard.compareValueTo(lastCard, vira) > 0 ? Optional.of(firstCard) : Optional.of(lastCard);
     }
 
-    public Optional<Player> getWinner() {
+    /*
+     * @ public normal_behavior
+     * 
+     * @ ensures \result != null;
+     * 
+     * @ ensures \result.isPresent() <==> winner != null;
+     * 
+     * @
+     */
+    public /* @ pure @ */ Optional<Player> getWinner() {
         return Optional.ofNullable(winner);
     }
 
-    public Player getFirstToPlay() {
+    /*
+     * @ public normal_behavior
+     * 
+     * @ ensures \result == firstToPlay;
+     * 
+     * @
+     */
+    public /* @ pure @ */ Player getFirstToPlay() {
         return firstToPlay;
     }
 
-    public Player getLastToPlay() {
+    /*
+     * @ public normal_behavior
+     * 
+     * @ ensures \result == lastToPlay;
+     * 
+     * @
+     */
+    public /* @ pure @ */ Player getLastToPlay() {
         return lastToPlay;
     }
 
-    public Card getVira() {
+    /*
+     * @ public normal_behavior
+     * 
+     * @ ensures \result == vira;
+     * 
+     * @
+     */
+    public /* @ pure @ */ Card getVira() {
         return vira;
     }
 
-    public Card getFirstCard() {
+    /*
+     * @ public normal_behavior
+     * 
+     * @ ensures \result == firstCard;
+     * 
+     * @
+     */
+    public /* @ pure @ */ Card getFirstCard() {
         return firstCard;
     }
 
-    public Card getLastCard() {
+    /*
+     * @ public normal_behavior
+     * 
+     * @ ensures \result == lastCard;
+     * 
+     * @
+     */
+    public /* @ pure @ */ Card getLastCard() {
         return lastCard;
     }
 
@@ -97,6 +219,7 @@ public class Round {
     public String toString() {
         String result = winner == null ? "Draw" : winner.getUsername() + " wins";
         String winningCard = getWinnerCard().isEmpty() || winner == null ? "--" : getWinnerCard().get().toString();
-        return String.format("Round = %s x %s (Vira %s) - Result: %s (%s)", firstCard, lastCard, vira, result, winningCard);
+        return String.format("Round = %s x %s (Vira %s) - Result: %s (%s)", firstCard, lastCard, vira, result,
+                winningCard);
     }
 }

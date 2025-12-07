@@ -31,11 +31,37 @@ import java.util.stream.Collectors;
 
 public class IntelPrinter implements Command<Void> {
 
+    /*
+     * @ public invariant history != null;
+     * 
+     * @ public invariant userUUID != null;
+     * 
+     * @ public invariant userCards != null;
+     * 
+     * @
+     */
     private final List<IntelDto> history;
     private final int delayInMilliseconds;
     private final UUID userUUID;
     private final List<CardDto> userCards;
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires userUUID != null;
+     * 
+     * @ requires userCards != null;
+     * 
+     * @ requires history != null;
+     * 
+     * @ ensures this.userUUID == userUUID;
+     * 
+     * @ ensures this.userCards != null;
+     * 
+     * @ ensures this.history == history;
+     * 
+     * @
+     */
     public IntelPrinter(UUID userUUID, List<CardDto> userCards, List<IntelDto> history, int delayInMilliseconds) {
         this.userUUID = userUUID;
         this.userCards = List.copyOf(userCards);
@@ -43,9 +69,18 @@ public class IntelPrinter implements Command<Void> {
         this.delayInMilliseconds = delayInMilliseconds;
     }
 
+    /*
+     * @ also
+     * 
+     * @ public normal_behavior
+     * 
+     * @ ensures \result == null;
+     * 
+     * @
+     */
     @Override
     public Void execute() {
-        while (!history.isEmpty()){
+        while (!history.isEmpty()) {
             print(history.remove(0));
         }
         return null;
@@ -58,7 +93,7 @@ public class IntelPrinter implements Command<Void> {
         printRounds(intel);
         printCardsOpenInTable(intel);
         printVira(intel.vira());
-        if(isUserTurn(intel)) {
+        if (isUserTurn(intel)) {
             printCardToPlayAgainst(intel);
             printOwnedCards();
         }
@@ -67,9 +102,12 @@ public class IntelPrinter implements Command<Void> {
     }
 
     private void clearAfter(int delayInMilliseconds) {
-        if(delayInMilliseconds > 0) {
-            try {TimeUnit.MILLISECONDS.sleep(delayInMilliseconds);}
-            catch (InterruptedException e) {e.printStackTrace();}
+        if (delayInMilliseconds > 0) {
+            try {
+                TimeUnit.MILLISECONDS.sleep(delayInMilliseconds);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
         cls();
     }
@@ -79,7 +117,7 @@ public class IntelPrinter implements Command<Void> {
     }
 
     private void printGameMainInfo(IntelDto intel) {
-        if(intel.currentPlayerUuid() != null) {
+        if (intel.currentPlayerUuid() != null) {
             final var user = intel.players().stream()
                     .filter(p -> p.uuid().equals(userUUID)).findAny().orElseThrow();
             final var bot = intel.players().stream()
@@ -122,7 +160,8 @@ public class IntelPrinter implements Command<Void> {
 
     private void printCardToPlayAgainst(IntelDto intel) {
         final var cardToPlayAgainst = intel.cardToPlayAgainst();
-        if(cardToPlayAgainst != null) System.out.println(" Carta do Oponente: " + formatCard(cardToPlayAgainst));
+        if (cardToPlayAgainst != null)
+            System.out.println(" Carta do Oponente: " + formatCard(cardToPlayAgainst));
     }
 
     private void printOwnedCards() {
@@ -135,16 +174,26 @@ public class IntelPrinter implements Command<Void> {
 
     private void printResultIfAvailable(IntelDto intel) {
         final var possibleWinner = intel.handWinner();
-        if (possibleWinner == null) return;
+        if (possibleWinner == null)
+            return;
         final String resultString = possibleWinner.toUpperCase().concat(" VENCEU!");
         System.out.println(" RESULTADO: " + resultString);
     }
 
-    public String formatCard(CardDto card){
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires card != null;
+     * 
+     * @ ensures \result != null;
+     * 
+     * @
+     */
+    public String formatCard(CardDto card) {
         final String rank = card.rank();
         final String suit = card.suit();
         final String rankSymbol = rank.equals("X") ? ":" : rank;
-        final String suitSymbol = switch (suit){
+        final String suitSymbol = switch (suit) {
             case "D" -> "\u2666";
             case "S" -> "\u2660";
             case "H" -> "\u2665";

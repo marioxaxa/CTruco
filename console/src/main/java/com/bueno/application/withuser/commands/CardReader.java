@@ -32,19 +32,50 @@ import static com.google.common.primitives.Ints.tryParse;
 @SuppressWarnings("UnstableApiUsage")
 public class CardReader implements Command<CardDto> {
 
+    /*
+     * @ public invariant mainCli != null;
+     * 
+     * @ public invariant userCards != null;
+     * 
+     * @
+     */
     public static final int DELAY_IN_MILLISECONDS = 3000;
     private final PlayAgainstBots mainCli;
     private final List<CardDto> userCards;
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires mainCli != null;
+     * 
+     * @ requires userCards != null;
+     * 
+     * @ ensures this.mainCli == mainCli;
+     * 
+     * @ ensures this.userCards == userCards;
+     * 
+     * @
+     */
     public CardReader(PlayAgainstBots mainCli, List<CardDto> userCards) {
         this.mainCli = mainCli;
         this.userCards = userCards;
     }
 
+    /*
+     * @ also
+     * 
+     * @ public normal_behavior
+     * 
+     * @ ensures \result != null;
+     * 
+     * @ ensures userCards.contains(\result);
+     * 
+     * @
+     */
     @Override
     public CardDto execute() {
         var scanner = new Scanner(System.in);
-        while (true){
+        while (true) {
             mainCli.printGameIntel(DELAY_IN_MILLISECONDS);
 
             System.out.print("Carta a jogar [índice] > ");
@@ -58,6 +89,15 @@ public class CardReader implements Command<CardDto> {
         }
     }
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires choice != null;
+     * 
+     * @ ensures \result == choice - 1;
+     * 
+     * @
+     */
     private int cardIndexOf(Integer choice) {
         return choice - 1;
     }

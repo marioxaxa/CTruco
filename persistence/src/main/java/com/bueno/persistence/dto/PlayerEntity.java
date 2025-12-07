@@ -35,12 +35,27 @@ import java.util.UUID;
 @NoArgsConstructor
 @Builder
 public class PlayerEntity {
+    // @ public invariant id != null;
+    // @ public invariant username != null;
+    // @ public invariant cards != null;
+
     private UUID id;
     private String username;
     private int score;
     private boolean isBot;
     private List<String> cards;
 
+    /*
+     * @
+     * 
+     * @ public normal_behavior
+     * 
+     * @ requires dto != null;
+     * 
+     * @ ensures \result != null;
+     * 
+     * @
+     */
     public static PlayerEntity from(PlayerDto dto) {
         return PlayerEntity.builder()
                 .id(dto.uuid())
@@ -51,6 +66,15 @@ public class PlayerEntity {
                 .build();
     }
 
+    /*
+     * @
+     * 
+     * @ public normal_behavior
+     * 
+     * @ ensures \result != null;
+     * 
+     * @
+     */
     public PlayerDto toDto() {
         final List<CardDto> cardDtos = cards.stream()
                 .map(card -> new CardDto(card.substring(0, 1), card.substring(1, 2)))

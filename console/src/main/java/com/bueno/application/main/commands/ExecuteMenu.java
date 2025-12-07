@@ -14,16 +14,50 @@ import java.util.logging.LogManager;
 
 public class ExecuteMenu implements Command<Void> {
 
+    /*
+     * @ public invariant repository != null;
+     * 
+     * @ public invariant botApi != null;
+     * 
+     * @ public invariant providerService != null;
+     * 
+     * @
+     */
+
     private final RemoteBotRepository repository;
     private final RemoteBotApi botApi;
     private final BotManagerService providerService;
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires repository != null;
+     * 
+     * @ requires botApi != null;
+     * 
+     * @ ensures this.repository == repository;
+     * 
+     * @ ensures this.botApi == botApi;
+     * 
+     * @ ensures this.providerService != null;
+     * 
+     * @
+     */
     public ExecuteMenu(RemoteBotRepository repository, RemoteBotApi botApi) {
         this.repository = repository;
         this.botApi = botApi;
         providerService = new BotManagerService(repository, botApi);
     }
 
+    /*
+     * @ also
+     * 
+     * @ public behavior
+     * 
+     * @ ensures \result == null;
+     * 
+     * @
+     */
     @Override
     public Void execute() {
         Scanner scanner = new Scanner(System.in);
@@ -45,6 +79,15 @@ public class ExecuteMenu implements Command<Void> {
         System.out.println("exit.............................[0]");
     }
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires option != null;
+     * 
+     * @ ensures true;
+     * 
+     * @
+     */
     private void menuSwitch(String option) {
         switch (option) {
             case "0" -> {

@@ -37,12 +37,34 @@ public enum Suit {
         this.ordinalValue = ordinalValue;
     }
 
-    public static Suit ofSymbol(String symbol){
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires symbol != null;
+     * 
+     * @ ensures \result != null;
+     * 
+     * @ public exceptional_behavior
+     * 
+     * @ signals (IllegalArgumentException e) true;
+     * 
+     * @
+     */
+    public static Suit ofSymbol(String symbol) {
         return Arrays.stream(values())
                 .filter(suit -> suit.symbol.equals(symbol))
                 .findFirst().orElseThrow(() -> new IllegalArgumentException("Unknown suit symbol"));
     }
 
+    /*
+     * @ also
+     * 
+     * @ public normal_behavior
+     * 
+     * @ ensures \result != null;
+     * 
+     * @
+     */
     @Override
     public String toString() {
         return symbol;

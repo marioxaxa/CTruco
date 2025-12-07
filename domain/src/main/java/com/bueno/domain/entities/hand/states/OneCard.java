@@ -31,8 +31,23 @@ import java.util.EnumSet;
 
 public class OneCard implements HandState {
 
+    /*
+     * @ public invariant context != null;
+     * 
+     * @
+     */
+    /* @ spec_public @ */
     private final Hand context;
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires context != null;
+     * 
+     * @ ensures this.context == context;
+     * 
+     * @
+     */
     public OneCard(Hand context) {
         this.context = context;
         setPossibleHandActions();
@@ -40,18 +55,44 @@ public class OneCard implements HandState {
 
     private void setPossibleHandActions() {
         final EnumSet<PossibleAction> possibleActions = EnumSet.of(PossibleAction.PLAY);
-        if(context.canRaiseBet()) possibleActions.add(PossibleAction.RAISE);
+        if (context.canRaiseBet())
+            possibleActions.add(PossibleAction.RAISE);
         context.setPossibleActions(possibleActions);
     }
 
+    /*
+     * @ also
+     * 
+     * @ public exceptional_behavior
+     * 
+     * @ signals (IllegalStateException e) true;
+     * 
+     * @
+     */
     @Override
     public void playFirstCard(Player player, Card card) {
         throw new IllegalStateException("First card has already been played: " + context.getCardToPlayAgainst());
     }
 
+    /*
+     * @ also
+     * 
+     * @ public normal_behavior
+     * 
+     * @ requires !isThrowingClosedCardInFirstRound(card);
+     * 
+     * @ ensures context.getOpenCards().contains(card);
+     * 
+     * @ public exceptional_behavior
+     * 
+     * @ signals (GameRuleViolationException e)
+     * isThrowingClosedCardInFirstRound(card);
+     * 
+     * @
+     */
     @Override
     public void playSecondCard(Player player, Card card) {
-        if(isThrowingClosedCardInFirstRound(card))
+        if (isThrowingClosedCardInFirstRound(card))
             throw new GameRuleViolationException("Can not throw a closed card in first round");
         context.addOpenCard(card);
         context.playRound(card);
@@ -64,6 +105,16 @@ public class OneCard implements HandState {
         context.updateHistory(Event.PLAY);
     }
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires card != null;
+     * 
+     * @ ensures \result == (context.numberOfRoundsPlayed() == 0 &&
+     * card.isClosed());
+     * 
+     * @
+     */
     private boolean isThrowingClosedCardInFirstRound(Card card) {
         return context.numberOfRoundsPlayed() == 0 && card.isClosed();
     }
@@ -75,7 +126,8 @@ public class OneCard implements HandState {
 
     private void handleSecondRoundPostConditions() {
         context.checkForWinnerAfterSecondRound();
-        if (context.hasWinner()) context.setState(new Done(context));
+        if (context.hasWinner())
+            context.setState(new Done(context));
         else {
             context.defineRoundPlayingOrder();
             context.setCurrentPlayer(context.getFirstToPlay());
@@ -88,16 +140,43 @@ public class OneCard implements HandState {
         context.setState(new Done(context));
     }
 
+    /*
+     * @ also
+     * 
+     * @ public exceptional_behavior
+     * 
+     * @ signals (IllegalStateException e) true;
+     * 
+     * @
+     */
     @Override
     public void accept(Player responder) {
         throw new IllegalStateException("No raising bet request to be accepted.");
     }
 
+    /*
+     * @ also
+     * 
+     * @ public exceptional_behavior
+     * 
+     * @ signals (IllegalStateException e) true;
+     * 
+     * @
+     */
     @Override
     public void quit(Player responder) {
         throw new IllegalStateException("No raising bet request to quit.");
     }
 
+    /*
+     * @ also
+     * 
+     * @ public normal_behavior
+     * 
+     * @ requires requester != null;
+     * 
+     * @
+     */
     @Override
     public void raise(Player requester) {
         context.addPointsProposal();

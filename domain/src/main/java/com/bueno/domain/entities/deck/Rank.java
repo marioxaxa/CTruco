@@ -40,20 +40,49 @@ public enum Rank {
         return value;
     }
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ ensures \result != null;
+     * 
+     * @
+     */
     public Rank next() {
-        return switch (value){
+        return switch (value) {
             case 0 -> HIDDEN;
             case 10 -> FOUR;
             default -> values()[value + 1];
         };
     }
 
-    public static Rank ofSymbol(String symbol){
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires symbol != null;
+     * 
+     * @ ensures \result != null;
+     * 
+     * @ public exceptional_behavior
+     * 
+     * @ signals (IllegalArgumentException e) true;
+     * 
+     * @
+     */
+    public static Rank ofSymbol(String symbol) {
         return Arrays.stream(values())
                 .filter(rank -> String.valueOf(rank.symbol).equals(symbol))
                 .findFirst().orElseThrow(() -> new IllegalArgumentException("Unknown rank symbol:" + symbol));
     }
 
+    /*
+     * @ also
+     * 
+     * @ public normal_behavior
+     * 
+     * @ ensures \result != null;
+     * 
+     * @
+     */
     @Override
     public String toString() {
         return String.valueOf(symbol);

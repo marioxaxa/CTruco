@@ -27,27 +27,62 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 public class RaiseResponseReader implements Command<RaiseResponseReader.RaiseResponseChoice> {
+    /*
+     * @ public invariant mainCli != null;
+     * 
+     * @ public invariant nextScore > 0;
+     * 
+     * @
+     */
     private final PlayAgainstBots mainCli;
     private final int nextScore;
-    public enum RaiseResponseChoice {QUIT, ACCEPT, RAISE}
 
+    public enum RaiseResponseChoice {
+        QUIT, ACCEPT, RAISE
+    }
+
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires mainCli != null;
+     * 
+     * @ requires nextScore > 0;
+     * 
+     * @ ensures this.mainCli == mainCli;
+     * 
+     * @ ensures this.nextScore == nextScore;
+     * 
+     * @
+     */
     public RaiseResponseReader(PlayAgainstBots mainCli, int nextScore) {
         this.mainCli = mainCli;
         this.nextScore = nextScore;
     }
 
+    /*
+     * @ also
+     * 
+     * @ public normal_behavior
+     * 
+     * @ ensures \result != null;
+     * 
+     * @ ensures \result == RaiseResponseChoice.RAISE ==> canRaise();
+     * 
+     * @
+     */
     @Override
     public RaiseResponseChoice execute() {
         var scanner = new Scanner(System.in);
         while (true) {
             String optionsAsString = "(T)opa, (C)orre" + (canRaise() ? ", (A)umenta" : "");
             System.out.print(mainCli.getOpponentUsername() + " está pedindo " + toRequestString(nextScore)
-                    + ". Escolha uma opção ["+ optionsAsString +"]: ");
+                    + ". Escolha uma opção [" + optionsAsString + "]: ");
 
             final ArrayList<String> options = new ArrayList<>();
             options.add("t");
             options.add("c");
-            if (canRaise()) options.add("a");
+            if (canRaise())
+                options.add("a");
 
             final var choice = scanner.nextLine().toLowerCase();
 
@@ -56,7 +91,7 @@ public class RaiseResponseReader implements Command<RaiseResponseReader.RaiseRes
                 continue;
             }
 
-            return switch (choice){
+            return switch (choice) {
                 case "c" -> RaiseResponseChoice.QUIT;
                 case "t" -> RaiseResponseChoice.ACCEPT;
                 case "a" -> RaiseResponseChoice.RAISE;
@@ -65,6 +100,13 @@ public class RaiseResponseReader implements Command<RaiseResponseReader.RaiseRes
         }
     }
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ ensures \result == (nextScore < 12);
+     * 
+     * @
+     */
     private boolean canRaise() {
         return nextScore < 12;
     }

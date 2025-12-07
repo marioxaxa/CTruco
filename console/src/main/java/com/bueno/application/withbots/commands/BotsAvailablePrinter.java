@@ -6,12 +6,31 @@ import java.util.List;
 
 public class BotsAvailablePrinter implements Command<Void> {
 
+    /* @ public invariant botNames != null; @ */
     List<String> botNames;
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires botNames != null;
+     * 
+     * @ ensures this.botNames == botNames;
+     * 
+     * @
+     */
     public BotsAvailablePrinter(List<String> botNames) {
         this.botNames = botNames;
     }
 
+    /*
+     * @ also
+     * 
+     * @ public normal_behavior
+     * 
+     * @ ensures \result == null;
+     * 
+     * @
+     */
     @Override
     public Void execute() {
         for (int i = 0; i < botNames.size(); i++) {

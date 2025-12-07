@@ -32,23 +32,65 @@ import java.util.EnumSet;
 
 public class WaitingMaoDeOnze implements HandState {
 
+    /*
+     * @ public invariant context != null;
+     * 
+     * @
+     */
+    /* @ spec_public @ */
     private final Hand context;
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires context != null;
+     * 
+     * @ ensures this.context == context;
+     * 
+     * @
+     */
     public WaitingMaoDeOnze(Hand context) {
         this.context = context;
         this.context.setPossibleActions(EnumSet.of(PossibleAction.ACCEPT, PossibleAction.QUIT));
     }
 
+    /*
+     * @ also
+     * 
+     * @ public exceptional_behavior
+     * 
+     * @ signals (IllegalStateException e) true;
+     * 
+     * @
+     */
     @Override
     public void playFirstCard(Player player, Card card) {
         throw new IllegalStateException("Can not play first card before deciding if plays mão de onze.");
     }
 
+    /*
+     * @ also
+     * 
+     * @ public exceptional_behavior
+     * 
+     * @ signals (IllegalStateException e) true;
+     * 
+     * @
+     */
     @Override
     public void playSecondCard(Player player, Card card) {
         throw new IllegalStateException("Can not play second card before deciding if plays mão de onze.");
     }
 
+    /*
+     * @ also
+     * 
+     * @ public normal_behavior
+     * 
+     * @ requires responder != null;
+     * 
+     * @
+     */
     @Override
     public void accept(Player responder) {
         context.setPoints(HandPoints.THREE);
@@ -58,6 +100,15 @@ public class WaitingMaoDeOnze implements HandState {
         context.updateHistory(Event.ACCEPT_HAND);
     }
 
+    /*
+     * @ also
+     * 
+     * @ public normal_behavior
+     * 
+     * @ requires responder != null;
+     * 
+     * @
+     */
     @Override
     public void quit(Player responder) {
         Player opponent = context.getOpponentOf(responder);
@@ -66,6 +117,15 @@ public class WaitingMaoDeOnze implements HandState {
         context.updateHistory(Event.QUIT_HAND);
     }
 
+    /*
+     * @ also
+     * 
+     * @ public exceptional_behavior
+     * 
+     * @ signals (IllegalStateException e) true;
+     * 
+     * @
+     */
     @Override
     public void raise(Player requester) {
         throw new IllegalStateException("Can not raise while deciding if plays mão de onze.");

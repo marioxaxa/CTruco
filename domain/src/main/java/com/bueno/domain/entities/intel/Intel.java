@@ -31,9 +31,12 @@ import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class Intel{
+public class Intel {
 
+    /* @ spec_public @ */
     private final Instant timestamp;
+
+    /* @ public invariant timestamp != null; @ */
 
     private boolean gameIsDone;
     private UUID gameWinner;
@@ -63,10 +66,14 @@ public class Intel{
         timestamp = Instant.now();
     }
 
-    public Intel(Instant timestamp, boolean gameIsDone, UUID gameWinner, boolean maoDeOnze, Integer handPoints, Integer pointsProposal, List<Optional<String>> roundWinnersUsernames,
-                 List<Optional<UUID>> roundWinnersUuid, int roundsPlayed, Card vira, List<Card> openCards, String handWinner, UUID currentPlayerUuid, Integer currentPlayerScore,
-                 String currentPlayerUsername, Integer currentOpponentScore, String currentOpponentUsername, Card cardToPlayAgainst,
-                 List<PlayerIntel> playersIntel, String event, UUID eventPlayerUuid, String eventPlayerUsername, Set<String> possibleActions){
+    public Intel(Instant timestamp, boolean gameIsDone, UUID gameWinner, boolean maoDeOnze, Integer handPoints,
+            Integer pointsProposal, List<Optional<String>> roundWinnersUsernames,
+            List<Optional<UUID>> roundWinnersUuid, int roundsPlayed, Card vira, List<Card> openCards, String handWinner,
+            UUID currentPlayerUuid, Integer currentPlayerScore,
+            String currentPlayerUsername, Integer currentOpponentScore, String currentOpponentUsername,
+            Card cardToPlayAgainst,
+            List<PlayerIntel> playersIntel, String event, UUID eventPlayerUuid, String eventPlayerUsername,
+            Set<String> possibleActions) {
         this.timestamp = timestamp;
         this.gameIsDone = gameIsDone;
         this.gameWinner = gameWinner;
@@ -92,7 +99,21 @@ public class Intel{
         this.possibleActions = Set.copyOf(possibleActions);
     }
 
-    static public Intel ofHand(Hand currentHand, Event event){
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires currentHand != null;
+     * 
+     * @ requires event != null;
+     * 
+     * @ ensures \result != null;
+     * 
+     * @ ensures \result.event().isPresent() &&
+     * \result.event().get().equals(event.toString());
+     * 
+     * @
+     */
+    static public Intel ofHand(Hand currentHand, Event event) {
         final Hand hand = Objects.requireNonNull(currentHand);
         final Intel result = new Intel();
         result.event = event.toString();
@@ -101,17 +122,27 @@ public class Intel{
         return result;
     }
 
-    static public Intel ofGame(Game currentGame){
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires currentGame != null;
+     * 
+     * @ ensures \result != null;
+     * 
+     * @
+     */
+    static public Intel ofGame(Game currentGame) {
         final Game game = Objects.requireNonNull(currentGame);
         final Intel result = ofHand(game.currentHand(), Event.GAME_OVER);
         result.setGameIntel(game);
         return result;
     }
 
-    private void setHandIntel(Hand hand){
+    private void setHandIntel(Hand hand) {
         maoDeOnze = hand.isMaoDeOnze();
         handPoints = hand.getPoints().get();
-        if(hand.getPointsProposal() != null) handPointsProposal = hand.getPointsProposal().get();
+        if (hand.getPointsProposal() != null)
+            handPointsProposal = hand.getPointsProposal().get();
         roundWinnersUsernames = getRoundWinnersUsernames(hand);
         roundWinnersUuid = getRoundWinnersUuid(hand);
         roundsPlayed = roundWinnersUsernames.size();
@@ -122,7 +153,7 @@ public class Intel{
         possibleActions = hand.getPossibleActions().stream().map(Objects::toString).collect(Collectors.toSet());
     }
 
-    private void setPlayersIntel(Hand hand){
+    private void setPlayersIntel(Hand hand) {
         players = List.of(new PlayerIntel(hand.getFirstToPlay()), new PlayerIntel(hand.getLastToPlay()));
 
         final Player eventPlayer = hand.getEventPlayer();
@@ -130,30 +161,81 @@ public class Intel{
         eventPlayerUuid = eventPlayer != null ? eventPlayer.getUuid() : null;
 
         final Player currentPlayer = hand.getCurrentPlayer();
-        currentPlayerScore = currentPlayer != null ?  currentPlayer.getScore() : 0;
-        currentPlayerUsername = currentPlayer != null ?  currentPlayer.getUsername() : null;
+        currentPlayerScore = currentPlayer != null ? currentPlayer.getScore() : 0;
+        currentPlayerUsername = currentPlayer != null ? currentPlayer.getUsername() : null;
         currentPlayerUuid = currentPlayer != null ? currentPlayer.getUuid() : null;
 
-        currentOpponentScore = currentPlayer != null ?  hand.getOpponentOf(currentPlayer).getScore() : 0;
-        currentOpponentUsername = currentPlayer != null ?  hand.getOpponentOf(currentPlayer).getUsername() : null;
+        currentOpponentScore = currentPlayer != null ? hand.getOpponentOf(currentPlayer).getScore() : 0;
+        currentOpponentUsername = currentPlayer != null ? hand.getOpponentOf(currentPlayer).getUsername() : null;
     }
 
-    private void setGameIntel(Game game){
+    private void setGameIntel(Game game) {
         gameIsDone = game.isDone();
         gameWinner = game.getWinner().map(Player::getUuid).orElse(null);
     }
 
-    public static class PlayerIntel{
+    public static class PlayerIntel {
+        /* @ spec_public @ */
         private final UUID uuid;
+        /* @ spec_public @ */
         private final String username;
+        /* @ spec_public @ */
         private final int score;
+        /* @ spec_public @ */
         private final List<Card> cards;
+        /* @ spec_public @ */
         private final boolean isBot;
 
+        /*
+         * @ public invariant uuid != null;
+         * 
+         * @ public invariant username != null;
+         * 
+         * @ public invariant cards != null;
+         * 
+         * @
+         */
+
+        /*
+         * @ public normal_behavior
+         * 
+         * @ requires player != null;
+         * 
+         * @ ensures this.uuid == player.getUuid();
+         * 
+         * @ ensures this.username == player.getUsername();
+         * 
+         * @ ensures this.score == player.getScore();
+         * 
+         * @ ensures this.isBot == player.isBot();
+         * 
+         * @
+         */
         public PlayerIntel(Player player) {
             this(player.getUsername(), player.getUuid(), player.getScore(), player.isBot(), player.getCards());
         }
 
+        /*
+         * @ public normal_behavior
+         * 
+         * @ requires username != null;
+         * 
+         * @ requires uuid != null;
+         * 
+         * @ requires playerCards != null;
+         * 
+         * @ ensures this.username == username;
+         * 
+         * @ ensures this.uuid == uuid;
+         * 
+         * @ ensures this.score == score;
+         * 
+         * @ ensures this.isBot == isBot;
+         * 
+         * @ ensures this.cards.equals(playerCards);
+         * 
+         * @
+         */
         public PlayerIntel(String username, UUID uuid, int score, boolean isBot, List<Card> playerCards) {
             this.uuid = uuid;
             this.username = username;
@@ -184,10 +266,13 @@ public class Intel{
 
         @Override
         public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
+            if (this == o)
+                return true;
+            if (o == null || getClass() != o.getClass())
+                return false;
             PlayerIntel that = (PlayerIntel) o;
-            return score == that.score && uuid.equals(that.uuid) && username.equals(that.username) && cards.equals(that.cards);
+            return score == that.score && uuid.equals(that.uuid) && username.equals(that.username)
+                    && cards.equals(that.cards);
         }
     }
 
@@ -209,7 +294,14 @@ public class Intel{
                 .toList();
     }
 
-    public Instant timestamp() {
+    /*
+     * @ public normal_behavior
+     * 
+     * @ ensures \result != null;
+     * 
+     * @
+     */
+    public /* @ pure @ */ Instant timestamp() {
         return timestamp;
     }
 
@@ -265,14 +357,14 @@ public class Intel{
         return possibleActions;
     }
 
-    public List<PlayerIntel> players(){
+    public List<PlayerIntel> players() {
         return players;
     }
 
     public Optional<UUID> currentPlayerUuid() {
         return Optional.ofNullable(currentPlayerUuid);
     }
-    
+
     public int currentPlayerScore() {
         return currentPlayerScore;
     }
@@ -301,11 +393,12 @@ public class Intel{
         return Optional.ofNullable(eventPlayerUsername);
     }
 
-
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         Intel intel = (Intel) o;
         return timestamp.equals(intel.timestamp);
     }
@@ -317,7 +410,8 @@ public class Intel{
 
     @Override
     public String toString() {
-        final String userInMaoDeOnze = currentPlayerScore < currentOpponentScore ? currentOpponentUsername : currentPlayerUsername;
+        final String userInMaoDeOnze = currentPlayerScore < currentOpponentScore ? currentOpponentUsername
+                : currentPlayerUsername;
 
         return "[" + timestamp +
                 "] Event = " + (event == null ? "--" : event) +
@@ -330,7 +424,7 @@ public class Intel{
                 " | Rounds = " + roundWinnersUsernames +
                 " | Hand Score = " + handPoints +
                 (pointsProposal().isPresent() ? " | Score Proposal = " + pointsProposal().get() : "") +
-                (isMaoDeOnze() ? " | Mão de Onze = " + userInMaoDeOnze  :  "") +
+                (isMaoDeOnze() ? " | Mão de Onze = " + userInMaoDeOnze : "") +
                 " | Winner = " + handWinner;
     }
 }
