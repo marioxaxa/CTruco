@@ -26,8 +26,14 @@ fi
 echo -e "${GREEN}✓ OpenJML encontrado${NC}"
 
 # Modo especial: verificar apenas entidades (sem problemas de generics)
-if [ "$MODE" = "check-entities" ]; then
-    echo -e "${CYAN}Verificando apenas entidades do domínio (sem dependências complexas)...${NC}"
+if [ "$MODE" = "check-entities" ] || [ "$MODE" = "esc-entities" ]; then
+    if [ "$MODE" = "check-entities" ]; then
+        echo -e "${CYAN}Verificando apenas entidades do domínio (Type Checking)...${NC}"
+        OPENJML_MODE="-check"
+    else
+        echo -e "${CYAN}Verificando apenas entidades do domínio (Extended Static Checking)...${NC}"
+        OPENJML_MODE="-esc -prover z3_4_7"
+    fi
 
     TEMP_DIR=$(mktemp -d)
     trap "rm -rf $TEMP_DIR" EXIT
@@ -69,7 +75,7 @@ if [ "$MODE" = "check-entities" ]; then
     echo -e "${CYAN}Processando ${#EXISTING_FILES[@]} arquivos...${NC}"
     echo ""
 
-    openjml -sourcepath "$SOURCEPATH" -check "${EXISTING_FILES[@]}"
+    openjml -sourcepath "$SOURCEPATH" $OPENJML_MODE "${EXISTING_FILES[@]}"
     EXIT_CODE=$?
 
     echo ""
@@ -78,6 +84,21 @@ if [ "$MODE" = "check-entities" ]; then
     else
         echo -e "${YELLOW}⚠ OpenJML encontrou problemas (exit code: $EXIT_CODE)${NC}"
     fi
+
+    # Ordem dos comandos para verificação completa
+    echo -e "\n${CYAN}=== ORDEM DE VERIFICAÇÃO ===${NC}"
+    echo -e "${GREEN}1.${NC} ./run-openjml.sh check bot-spi           ${GRAY}# ✓ Type checking do bot-spi${NC}"
+    echo -e "${GREEN}2.${NC} ./run-openjml.sh esc bot-spi             ${GRAY}# ✓ Extended Static Checking do bot-spi (48 avisos)${NC}"
+    echo -e "${GREEN}3.${NC} ./run-openjml.sh check-entities          ${GRAY}# ✓ Type checking das entidades${NC}"
+    echo -e "${GREEN}4.${NC} ./run-openjml.sh esc-entities            ${GRAY}# ✓ ESC das entidades (102 avisos)${NC}"
+    echo -e "${YELLOW}5.${NC} ./run-openjml.sh check domain            ${GRAY}# ⚠ Type checking do domain (23 erros de generics)${NC}"
+    echo -e "${YELLOW}6.${NC} ./run-openjml.sh esc domain              ${GRAY}# ⚠ ESC do domain (23 erros de generics)${NC}"
+    echo -e ""
+    echo -e "${RED}# RAC (Runtime Assertion Checking) - ERRO CATASTRÓFICO no OpenJML${NC}"
+    echo -e "${GRAY}# ./run-openjml.sh rac bot-spi             # Desabilitado - bug interno do OpenJML${NC}"
+    echo -e ""
+    echo -e "${GRAY}Nota: Erros de generics no domain são limitações do OpenJML com Java moderno${NC}"
+    echo -e "${GRAY}      (EnumSet, Stream, Collectors, lambdas com inferência de tipos)${NC}"
 
     exit $EXIT_CODE
 fi
@@ -202,25 +223,25 @@ fi
 
 echo ""
 if [ $EXIT_CODE -eq 0 ]; then
-    echo -e "${GREEN}✓ OpenJML executado com sucesso!${NC}"
+    echo -e "${GREEN}OpenJML executado com sucesso!${NC}"
 else
-    echo -e "${YELLOW}⚠ OpenJML encontrou problemas (exit code: $EXIT_CODE)${NC}"
+    echo -e "${YELLOW}OpenJML encontrou problemas (exit code: $EXIT_CODE)${NC}"
 fi
 
-# Exemplos de uso
-echo -e "\n${CYAN}=== EXEMPLOS DE USO ===${NC}"
-echo -e "${GRAY}Type checking do módulo domain:${NC}"
-echo -e "  ./run-openjml.sh check domain"
-echo -e "${GRAY}Type checking do módulo bot-spi:${NC}"
-echo -e "  ./run-openjml.sh check bot-spi"
-echo -e "${GRAY}Verificar apenas entidades (sem erros de generics):${NC}"
-echo -e "  ./run-openjml.sh check-entities"
-echo -e "${GRAY}Runtime Assertion Checking:${NC}"
-echo -e "  ./run-openjml.sh rac domain"
-echo -e "${GRAY}Extended Static Checking:${NC}"
-echo -e "  ./run-openjml.sh esc domain"
-echo -e "${GRAY}Verificar arquivo específico:${NC}"
-echo -e "  ./run-openjml.sh check domain com/bueno/domain/entities/deck/Card.java"
+# Ordem dos comandos para verificação completa
+echo -e "\n${CYAN}=== ORDEM DE VERIFICAÇÃO ===${NC}"
+echo -e "${GREEN}1.${NC} ./run-openjml.sh check bot-spi           ${GRAY}# ✓ Type checking do bot-spi${NC}"
+echo -e "${GREEN}2.${NC} ./run-openjml.sh esc bot-spi             ${GRAY}# ✓ Extended Static Checking do bot-spi (48 avisos)${NC}"
+echo -e "${GREEN}3.${NC} ./run-openjml.sh check-entities          ${GRAY}# ✓ Type checking das entidades${NC}"
+echo -e "${GREEN}4.${NC} ./run-openjml.sh esc-entities            ${GRAY}# ✓ ESC das entidades (102 avisos)${NC}"
+echo -e "${YELLOW}5.${NC} ./run-openjml.sh check domain            ${GRAY}# ⚠ Type checking do domain (23 erros de generics)${NC}"
+echo -e "${YELLOW}6.${NC} ./run-openjml.sh esc domain              ${GRAY}# ⚠ ESC do domain (23 erros de generics)${NC}"
+echo -e ""
+echo -e "${RED}# RAC (Runtime Assertion Checking) - ERRO CATASTRÓFICO no OpenJML${NC}"
+echo -e "${GRAY}# ./run-openjml.sh rac bot-spi             # Desabilitado - bug interno do OpenJML${NC}"
+echo -e ""
+echo -e "${GRAY}Nota: Erros de generics no domain são limitações do OpenJML com Java moderno${NC}"
+echo -e "${GRAY}      (EnumSet, Stream, Collectors, lambdas com inferência de tipos)${NC}"
 
 exit $EXIT_CODE
 
