@@ -1,27 +1,39 @@
 #!/bin/bash
 
 # Default OpenJML path (checks env var or local file)
+# Default OpenJML path (checks env var or local file)
 OPENJML_PATH="${OPENJML_HOME}/openjml"
 
-# Function to print usage
-usage() {
-    echo "Usage: $0 [-j path_to_openjml.jar] [openjml_options]"
-    echo "  -j path    Path to openjml.jar (overrides OPENJML_HOME)"
-    exit 1
-}
+# Parse arguments to separate OpenJML args from Target path
+# Usage: ./run_openjml.sh [-j path] [openjml-args] [target-path]
+# Example: ./run_openjml.sh -esc domain
+# Example: ./run_openjml.sh -check
 
-# Parse arguments
-while getopts "j:" opt; do
-  case ${opt} in
-    j)
-      OPENJML_PATH="$OPTARG"
-      ;;
-    \?)
-      usage
-      ;;
-  esac
+OPENJML_ARGS=""
+TARGET_PATH="."
+USE_FILTER=false
+
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        -j)
+            OPENJML_PATH="$2"
+            shift # past argument
+            shift # past value
+            ;;
+        -filter)
+            USE_FILTER=true
+            shift # past argument
+            ;;
+        -*)
+            OPENJML_ARGS="$OPENJML_ARGS $1"
+            shift # past argument
+            ;;
+        *)
+            TARGET_PATH="$1"
+            shift # past argument
+            ;;
+    esac
 done
-shift $((OPTIND -1))
 
 # Check OpenJML path
 if [ -z "$OPENJML_PATH" ] && [ -f "./openjml.jar" ]; then
@@ -30,43 +42,51 @@ fi
 
 if [ ! -f "$OPENJML_PATH" ]; then
     echo "Error: openjml.jar not found at '$OPENJML_PATH'"
-    echo "Please set OPENJML_HOME, place openjml.jar in this directory, or use -j option."
-    exit 1
+    # Try to find it in home dir if not set
+    if [ -f "$HOME/openjml/openjml" ]; then
+       OPENJML_PATH="$HOME/openjml/openjml"
+       echo "Found at default location: $OPENJML_PATH"
+    else 
+       echo "Please set OPENJML_HOME, place openjml.jar in this directory, or use -j option."
+       exit 1
+    fi
 fi
-
 echo "Using OpenJML: $OPENJML_PATH"
 
-# Build Classpath
-echo "Building classpath..."
-mkdir -p target
-mvn dependency:build-classpath -Dmdep.outputFile=target/classpath.txt -q
-if [ $? -ne 0 ]; then
-    echo "Error: Maven build classpath failed."
-    exit 1
+# Default to -check if no OpenJML args
+if [ -z "$OPENJML_ARGS" ]; then
+    OPENJML_ARGS="-check"
 fi
 
-CLASSPATH=$(cat target/classpath.txt)
-
-# Add module classes to classpath
-MODULE_CLASSES=$(find . -type d -path "*/target/classes" | tr '\n' ':')
-FULL_CLASSPATH="${CLASSPATH}:${MODULE_CLASSES}"
-
-# Find source files
-echo "Finding source files..."
-# Construct list of files, excluding tests
-find . -name "*.java" -not -path "*/test/*" | grep "/src/main/java/" > target/sources_list.txt
+# Find source files in the target path
+echo "Finding source files in '$TARGET_PATH'..."
+# Construct list of files, excluding tests, module definitions, and .volume directories
+find "$TARGET_PATH" -type f -name "*.java" -not -path "*/test/*" -not -path "./.volume/*" -not -name "module-info.java" | grep "/src/main/java/" > target/sources_list.txt
 SOURCE_COUNT=$(wc -l < target/sources_list.txt)
 
 if [ "$SOURCE_COUNT" -eq 0 ]; then
-    echo "No source files found."
+    echo "No source files found in $TARGET_PATH."
     exit 0
 fi
 
 echo "Found $SOURCE_COUNT source files."
+echo "Running OpenJML with args: $OPENJML_ARGS"
 
-# Run OpenJML
-echo "Running OpenJML..."
-# Use "$@" to pass remaining arguments to OpenJML
-"$OPENJML_PATH" -cp "$FULL_CLASSPATH" -check "$@" @target/sources_list.txt
+# Check if OPENJML_PATH ends in .jar
+CMD=""
+if [[ "$OPENJML_PATH" == *.jar ]]; then
+    CMD="java -jar \"$OPENJML_PATH\" -cp \"$FULL_CLASSPATH\" $OPENJML_ARGS @target/sources_list.txt"
+else
+    # Assume it is a script/executable
+    CMD="\"$OPENJML_PATH\" -cp \"$FULL_CLASSPATH\" $OPENJML_ARGS @target/sources_list.txt"
+fi
+
+# Run the command
+if [ "$USE_FILTER" = true ]; then
+    echo "Output filtered for JML warnings/errors..."
+    eval "$CMD" 2>&1 | grep -E "warning:|error:|assertion|invariant|requires|ensures|postcondition|precondition" | grep -v "module-info" | grep -v "cannot find symbol" | grep -v "package .* does not exist"
+else
+    eval "$CMD"
+fi
 
 echo "Done."
