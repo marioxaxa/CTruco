@@ -12,6 +12,7 @@ OPENJML_PATH="${OPENJML_HOME}/openjml"
 OPENJML_ARGS=""
 TARGET_PATH="."
 USE_FILTER=false
+SHOW_STATS=false
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -24,6 +25,10 @@ while [[ $# -gt 0 ]]; do
             USE_FILTER=true
             shift # past argument
             ;;
+        -stats)
+            SHOW_STATS=true
+            shift # past argument
+            ;;
         -*)
             OPENJML_ARGS="$OPENJML_ARGS $1"
             shift # past argument
@@ -34,6 +39,17 @@ while [[ $# -gt 0 ]]; do
             ;;
     esac
 done
+
+# Check if stats requested
+if [ "$SHOW_STATS" = true ]; then
+    echo "Calculating JML statistics in '$TARGET_PATH'..."
+    JML_FILES=$(find "$TARGET_PATH" -type f -name "*.java" -not -path "*/test/*" -not -path "./.volume/*" -not -name "module-info.java" | xargs grep -l -E "//@|/\*@" | wc -l)
+    TOTAL_FILES=$(find "$TARGET_PATH" -type f -name "*.java" -not -path "*/test/*" -not -path "./.volume/*" -not -name "module-info.java" | wc -l)
+    
+    echo "Files with JML annotations: $JML_FILES"
+    echo "Total Java files: $TOTAL_FILES"
+    exit 0
+fi
 
 # Check OpenJML path
 if [ -z "$OPENJML_PATH" ] && [ -f "./openjml.jar" ]; then
