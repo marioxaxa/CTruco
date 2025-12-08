@@ -17,15 +17,73 @@ import java.util.UUID;
 
 @Service
 public class UpdateRemoteBotRepositoryUseCase {
+    /* @ spec_public @ */
     private final RemoteBotRepository botRepository;
+    /* @ spec_public @ */
     private final UserRepository userRepository;
 
+    /*
+     * @ public invariant botRepository != null;
+     * 
+     * @ public invariant userRepository != null;
+     * 
+     * @
+     */
+
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires botRepository != null;
+     * 
+     * @ requires userRepository != null;
+     * 
+     * @ ensures this.botRepository == botRepository;
+     * 
+     * @ ensures this.userRepository == userRepository;
+     * 
+     * @
+     */
     public UpdateRemoteBotRepositoryUseCase(RemoteBotRepository botRepository, UserRepository userRepository) {
         this.botRepository = botRepository;
         this.userRepository = userRepository;
     }
 
-    public RemoteBotResponseModel update(String botName, RemoteBotRequestModel requestDto) {// TODO mudar o jeito q o update é feito, passando por uma query de update no Banco
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires botName != null;
+     * 
+     * @ requires requestDto != null;
+     * 
+     * @ requires requestDto.name() != null && requestDto.name().trim().length() >=
+     * 4;
+     * 
+     * @ requires requestDto.url() != null && requestDto.url().trim().length() >= 4;
+     * 
+     * @ requires requestDto.port() != null && requestDto.port().trim().length() ==
+     * 4;
+     * 
+     * @ requires requestDto.repositoryUrl() != null &&
+     * !requestDto.repositoryUrl().trim().isEmpty();
+     * 
+     * @ ensures \result != null;
+     * 
+     * @ signals (NullPointerException e) botName == null || requestDto == null ||
+     * requestDto.name() == null || requestDto.url() == null || requestDto.port() ==
+     * null || requestDto.repositoryUrl() == null;
+     * 
+     * @ signals (InvalidRequestException e) true;
+     * 
+     * @ signals (EntityNotFoundException e) true;
+     * 
+     * @ signals (UserNotAllowedException e) true;
+     * 
+     * @
+     */
+    public RemoteBotResponseModel update(String botName, RemoteBotRequestModel requestDto) {// TODO mudar o jeito q o
+                                                                                            // update é feito, passando
+                                                                                            // por uma query de update
+                                                                                            // no Banco
 
         Objects.requireNonNull(requestDto, "request is null");
         Objects.requireNonNull(botName, "botName is null");
@@ -33,7 +91,6 @@ public class UpdateRemoteBotRepositoryUseCase {
         Objects.requireNonNull(requestDto.url(), "url is null");
         Objects.requireNonNull(requestDto.port(), "port is null");
         Objects.requireNonNull(requestDto.repositoryUrl(), "repository url is null");
-
 
         if (requestDto.name().trim().length() < 4)
             throw new InvalidRequestException("invalid name");
@@ -47,7 +104,8 @@ public class UpdateRemoteBotRepositoryUseCase {
         if (requestDto.repositoryUrl().trim().isEmpty())
             throw new InvalidRequestException("invalid repository url");
 
-        RemoteBotDto bot = botRepository.findByName(botName).orElseThrow(() -> new EntityNotFoundException("bot not found"));
+        RemoteBotDto bot = botRepository.findByName(botName)
+                .orElseThrow(() -> new EntityNotFoundException("bot not found"));
 
         if (!isSameUser(bot.user(), requestDto.userId())) {
             throw new UserNotAllowedException("user not allowed to update bot");
@@ -65,7 +123,8 @@ public class UpdateRemoteBotRepositoryUseCase {
                 requestDto.repositoryUrl());
         botRepository.update(newDto);
         botRepository.disableBot(newDto.uuid());
-        return new RemoteBotResponseModel(newDto.name(), userOfNewBot.username(), newDto.url(), newDto.port(), newDto.repositoryUrl());
+        return new RemoteBotResponseModel(newDto.name(), userOfNewBot.username(), newDto.url(), newDto.port(),
+                newDto.repositoryUrl());
     }
 
     private boolean isSameUser(UUID botOwner, UUID requester) {

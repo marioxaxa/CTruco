@@ -11,12 +11,39 @@ import java.util.Optional;
 
 @Service
 public class DeleteRemoteBotRepositoryUseCase {
+    /* @ spec_public @ */
     private final RemoteBotRepository remoteBotRepository;
 
+    /*
+     * @ public invariant remoteBotRepository != null;
+     * 
+     * @
+     */
+
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires remoteBotRepository != null;
+     * 
+     * @ ensures this.remoteBotRepository == remoteBotRepository;
+     * 
+     * @
+     */
     public DeleteRemoteBotRepositoryUseCase(RemoteBotRepository remoteBotRepository) {
         this.remoteBotRepository = remoteBotRepository;
     }
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires botName != null;
+     * 
+     * @ signals (NullPointerException e) botName == null;
+     * 
+     * @ signals (EntityNotFoundException e) true;
+     * 
+     * @
+     */
     public void delete(String botName) {
         Objects.requireNonNull(botName, "botName is null");
         Optional<TransientRemoteBotDto> botToDelete = remoteBotRepository.findAll().stream()
@@ -28,7 +55,8 @@ public class DeleteRemoteBotRepositoryUseCase {
                         remoteBotDto.port(),
                         remoteBotDto.repositoryUrl()))
                 .findFirst();
-        if (botToDelete.isEmpty()) throw new EntityNotFoundException("Bot with name: " + botName + " wasn't found");
+        if (botToDelete.isEmpty())
+            throw new EntityNotFoundException("Bot with name: " + botName + " wasn't found");
         remoteBotRepository.delete(botToDelete.get());
     }
 }

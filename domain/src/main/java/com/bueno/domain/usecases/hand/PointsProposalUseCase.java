@@ -46,31 +46,98 @@ import java.util.UUID;
 @Service
 public class PointsProposalUseCase {
 
+    /* @ spec_public @ */
     private final GameRepository gameRepository;
+    /* @ spec_public @ */
     private final GameResultRepository gameResultRepository;
+    /* @ spec_public @ */
     private final HandResultRepository handResultRepository;
+    /* @ spec_public @ */
     private final BotUseCase botUseCase;
+    /* @ spec_public @ */
     private final BotManagerService botManagerService;
 
+    /*
+     * @ public invariant gameRepository != null;
+     * 
+     * @ public invariant botManagerService != null;
+     * 
+     * @ public invariant botUseCase != null;
+     * 
+     * @
+     */
+
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires gameRepository != null;
+     * 
+     * @ requires remoteBotRepository != null;
+     * 
+     * @ requires remoteBotApi != null;
+     * 
+     * @ requires botManagerService != null;
+     * 
+     * @ ensures this.gameRepository == gameRepository;
+     * 
+     * @ ensures this.botManagerService == botManagerService;
+     * 
+     * @ ensures this.botUseCase != null;
+     * 
+     * @
+     */
     public PointsProposalUseCase(GameRepository gameRepository,
-                                 RemoteBotRepository remoteBotRepository,
-                                 RemoteBotApi remoteBotApi, BotManagerService botManagerService) {
+            RemoteBotRepository remoteBotRepository,
+            RemoteBotApi remoteBotApi, BotManagerService botManagerService) {
         this(gameRepository, remoteBotRepository, remoteBotApi, null, null, botManagerService);
     }
 
     @Autowired
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires gameRepository != null;
+     * 
+     * @ requires remoteBotRepository != null;
+     * 
+     * @ requires remoteBotApi != null;
+     * 
+     * @ requires botManagerService != null;
+     * 
+     * @ ensures this.gameRepository == gameRepository;
+     * 
+     * @ ensures this.gameResultRepository == gameResultRepository;
+     * 
+     * @ ensures this.handResultRepository == handResultRepository;
+     * 
+     * @ ensures this.botManagerService == botManagerService;
+     * 
+     * @ ensures this.botUseCase != null;
+     * 
+     * @
+     */
     public PointsProposalUseCase(GameRepository gameRepository,
-                                 RemoteBotRepository remoteBotRepository,
-                                 RemoteBotApi remoteBotApi,
-                                 GameResultRepository gameResultRepository,
-                                 HandResultRepository handResultRepository, BotManagerService botManagerService) {
+            RemoteBotRepository remoteBotRepository,
+            RemoteBotApi remoteBotApi,
+            GameResultRepository gameResultRepository,
+            HandResultRepository handResultRepository, BotManagerService botManagerService) {
         this.gameRepository = Objects.requireNonNull(gameRepository);
         this.gameResultRepository = gameResultRepository;
         this.handResultRepository = handResultRepository;
         this.botManagerService = botManagerService;
-        this.botUseCase = new BotUseCase(gameRepository, remoteBotRepository, remoteBotApi, gameResultRepository, handResultRepository, botManagerService);
+        this.botUseCase = new BotUseCase(gameRepository, remoteBotRepository, remoteBotApi, gameResultRepository,
+                handResultRepository, botManagerService);
     }
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires playerUuid != null;
+     * 
+     * @ ensures \result != null;
+     * 
+     * @
+     */
     public IntelDto raise(UUID playerUuid) {
         validateInput(playerUuid, PossibleAction.RAISE);
 
@@ -86,6 +153,15 @@ public class PointsProposalUseCase {
         return IntelConverter.toDto(game.getIntel());
     }
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires playerUuid != null;
+     * 
+     * @ ensures \result != null;
+     * 
+     * @
+     */
     public IntelDto accept(UUID playerUuid) {
         validateInput(playerUuid, PossibleAction.ACCEPT);
 
@@ -101,6 +177,15 @@ public class PointsProposalUseCase {
         return IntelConverter.toDto(game.getIntel());
     }
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires playerUuid != null;
+     * 
+     * @ ensures \result != null;
+     * 
+     * @
+     */
     public IntelDto quit(UUID playerUuid) {
         validateInput(playerUuid, PossibleAction.QUIT);
 
@@ -110,11 +195,13 @@ public class PointsProposalUseCase {
 
         hand.quit(player);
 
-        final ResultHandler resultHandler = new ResultHandler(gameRepository, gameResultRepository, handResultRepository);
+        final ResultHandler resultHandler = new ResultHandler(gameRepository, gameResultRepository,
+                handResultRepository);
         final IntelDto gameResult = resultHandler.handle(game);
 
         gameRepository.update(GameConverter.toDto(game));
-        if (gameResult != null) return gameResult;
+        if (gameResult != null)
+            return gameResult;
 
         botUseCase.playWhenNecessary(game, botManagerService);
 
@@ -122,9 +209,19 @@ public class PointsProposalUseCase {
         return IntelConverter.toDto(game.getIntel());
     }
 
+    /*
+     * @ private normal_behavior
+     * 
+     * @ requires usedUuid != null;
+     * 
+     * @ requires raise != null;
+     * 
+     * @
+     */
     private void validateInput(UUID usedUuid, PossibleAction raise) {
         final Validator<UUID> validator = new ActionValidator(gameRepository, raise);
         final Notification notification = validator.validate(usedUuid);
-        if (notification.hasErrors()) throw new UnsupportedGameRequestException(notification.errorMessage());
+        if (notification.hasErrors())
+            throw new UnsupportedGameRequestException(notification.errorMessage());
     }
 }

@@ -43,26 +43,97 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class PlayCardUseCase {
+    /* @ spec_public @ */
     private final GameRepository gameRepository;
+    /* @ spec_public @ */
     private final GameResultRepository gameResultRepository;
+    /* @ spec_public @ */
     private final HandResultRepository handResultRepository;
+    /* @ spec_public @ */
     private final BotUseCase botUseCase;
+    /* @ spec_public @ */
     private final RemoteBotRepository remoteBotRepository;
+    /* @ spec_public @ */
     private final RemoteBotApi remoteBotApi;
+    /* @ spec_public @ */
     private final BotManagerService botManagerService;
 
+    /*
+     * @ public invariant gameRepository != null;
+     * 
+     * @ public invariant remoteBotRepository != null;
+     * 
+     * @ public invariant remoteBotApi != null;
+     * 
+     * @ public invariant botManagerService != null;
+     * 
+     * @ public invariant botUseCase != null;
+     * 
+     * @
+     */
+
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires gameRepository != null;
+     * 
+     * @ requires remoteBotRepository != null;
+     * 
+     * @ requires remoteBotApi != null;
+     * 
+     * @ requires botManagerService != null;
+     * 
+     * @ ensures this.gameRepository == gameRepository;
+     * 
+     * @ ensures this.remoteBotRepository == remoteBotRepository;
+     * 
+     * @ ensures this.remoteBotApi == remoteBotApi;
+     * 
+     * @ ensures this.botManagerService == botManagerService;
+     * 
+     * @ ensures this.botUseCase != null;
+     * 
+     * @
+     */
     public PlayCardUseCase(GameRepository gameRepository,
-                           RemoteBotRepository remoteBotRepository,
-                           RemoteBotApi remoteBotApi, BotManagerService botManagerService) {
+            RemoteBotRepository remoteBotRepository,
+            RemoteBotApi remoteBotApi, BotManagerService botManagerService) {
         this(gameRepository, remoteBotRepository, remoteBotApi, null, null, botManagerService);
     }
 
     @Autowired
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires gameRepository != null;
+     * 
+     * @ requires remoteBotRepository != null;
+     * 
+     * @ requires remoteBotApi != null;
+     * 
+     * @ requires botManagerService != null;
+     * 
+     * @ ensures this.gameRepository == gameRepository;
+     * 
+     * @ ensures this.gameResultRepository == gameResultRepository;
+     * 
+     * @ ensures this.handResultRepository == handResultRepository;
+     * 
+     * @ ensures this.remoteBotRepository == remoteBotRepository;
+     * 
+     * @ ensures this.remoteBotApi == remoteBotApi;
+     * 
+     * @ ensures this.botManagerService == botManagerService;
+     * 
+     * @ ensures this.botUseCase != null;
+     * 
+     * @
+     */
     public PlayCardUseCase(GameRepository gameRepository,
-                           RemoteBotRepository remoteBotRepository,
-                           RemoteBotApi remoteBotApi,
-                           GameResultRepository gameResultRepository,
-                           HandResultRepository handResultRepository, BotManagerService botManagerService) {
+            RemoteBotRepository remoteBotRepository,
+            RemoteBotApi remoteBotApi,
+            GameResultRepository gameResultRepository,
+            HandResultRepository handResultRepository, BotManagerService botManagerService) {
 
         this.gameRepository = gameRepository;
         this.gameResultRepository = gameResultRepository;
@@ -70,13 +141,40 @@ public class PlayCardUseCase {
         this.remoteBotRepository = remoteBotRepository;
         this.remoteBotApi = remoteBotApi;
         this.botManagerService = botManagerService;
-        this.botUseCase = new BotUseCase(gameRepository, remoteBotRepository, remoteBotApi, gameResultRepository, handResultRepository, botManagerService);
+        this.botUseCase = new BotUseCase(gameRepository, remoteBotRepository, remoteBotApi, gameResultRepository,
+                handResultRepository, botManagerService);
     }
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires request != null;
+     * 
+     * @ requires request.uuid() != null;
+     * 
+     * @ requires request.card() != null;
+     * 
+     * @ ensures \result != null;
+     * 
+     * @
+     */
     public IntelDto playCard(PlayCardDto request) {
         return playCard(request, false);
     }
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires request != null;
+     * 
+     * @ requires request.uuid() != null;
+     * 
+     * @ requires request.card() != null;
+     * 
+     * @ ensures \result != null;
+     * 
+     * @
+     */
     public IntelDto discard(PlayCardDto request) {
         return playCard(request, true);
     }
@@ -85,7 +183,8 @@ public class PlayCardUseCase {
         final var validator = new ActionValidator(gameRepository, PossibleAction.PLAY);
         final var notification = validator.validate(request.uuid());
 
-        if (notification.hasErrors()) throw new UnsupportedGameRequestException(notification.errorMessage());
+        if (notification.hasErrors())
+            throw new UnsupportedGameRequestException(notification.errorMessage());
 
         Game game = gameRepository.findByPlayerUuid(request.uuid()).map(GameConverter::fromDto).orElseThrow();
         final Hand hand = game.currentHand();
@@ -93,20 +192,24 @@ public class PlayCardUseCase {
         final Card cardToPlay = CardConverter.fromDto(request.card());
         final Card playedCard = discard ? player.discard(cardToPlay) : player.play(cardToPlay);
 
-        if (hand.getCardToPlayAgainst().isEmpty()) hand.playFirstCard(player, playedCard);
-        else hand.playSecondCard(player, playedCard);
+        if (hand.getCardToPlayAgainst().isEmpty())
+            hand.playFirstCard(player, playedCard);
+        else
+            hand.playSecondCard(player, playedCard);
 
-        final ResultHandler resultHandler = new ResultHandler(gameRepository, gameResultRepository, handResultRepository);
+        final ResultHandler resultHandler = new ResultHandler(gameRepository, gameResultRepository,
+                handResultRepository);
         final IntelDto gameResult = resultHandler.handle(game);
 
         gameRepository.update(GameConverter.toDto(game));
-        if (gameResult != null) return gameResult;
+        if (gameResult != null)
+            return gameResult;
 
         botUseCase.playWhenNecessary(game, botManagerService);
 
         game = gameRepository.findByPlayerUuid(request.uuid()).map(GameConverter::fromDto).orElseThrow();
         IntelDto intelResponse = IntelConverter.toDto(game.getIntel());
-//        if (game.isDone()) gameRepository.delete(game.getUuid());
+        // if (game.isDone()) gameRepository.delete(game.getUuid());
         return intelResponse;
     }
 }

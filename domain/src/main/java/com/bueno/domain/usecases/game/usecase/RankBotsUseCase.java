@@ -16,16 +16,53 @@ import java.util.stream.Collectors;
 public class RankBotsUseCase {
     public static final int TIMES_RANK = 7;
 
+    /* @ spec_public @ */
     private final RemoteBotRepository remoteBotRepository;
+    /* @ spec_public @ */
     private final RemoteBotApi remoteBotApi;
+    /* @ spec_public @ */
     private final List<String> botNames;
+    /* @ spec_public @ */
     private final BotManagerService botManagerService;
+    /* @ spec_public @ */
     private boolean isRanking = false;
+    /* @ spec_public @ */
     private boolean hasRank = false;
+    /* @ spec_public @ */
     private List<BotRankInfoDto> rank = new ArrayList<>();
+    /* @ spec_public @ */
     Map<String, Long> resultsMap = new HashMap<>();
     private long start;
 
+    /*
+     * @ public invariant remoteBotRepository != null;
+     * 
+     * @ public invariant remoteBotApi != null;
+     * 
+     * @ public invariant botManagerService != null;
+     * 
+     * @ public invariant rank != null;
+     * 
+     * @ public invariant resultsMap != null;
+     * 
+     * @
+     */
+
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires remoteBotRepository != null;
+     * 
+     * @ requires remoteBotApi != null;
+     * 
+     * @ ensures this.remoteBotRepository == remoteBotRepository;
+     * 
+     * @ ensures this.remoteBotApi == remoteBotApi;
+     * 
+     * @ ensures this.botManagerService != null;
+     * 
+     * @
+     */
     public RankBotsUseCase(RemoteBotRepository remoteBotRepository, RemoteBotApi remoteBotApi) {
         this.remoteBotRepository = remoteBotRepository;
         this.remoteBotApi = remoteBotApi;
@@ -33,6 +70,15 @@ public class RankBotsUseCase {
         botNames = botManagerService.providersNames();
     }
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ ensures \result != null;
+     * 
+     * @ ensures isRanking == false;
+     * 
+     * @
+     */
     public Map<String, Long> rankAll() {
         setRank(new ArrayList<>());
         setIsRanking(true);
@@ -73,24 +119,53 @@ public class RankBotsUseCase {
         return !opponentName.equals(botToEvaluateName);
     }
 
-    private List<PlayWithBotsDto> runSimulations(String challengedBotName, String botToEvaluateName, UUID uuidBotToEvaluate) {
+    private List<PlayWithBotsDto> runSimulations(String challengedBotName, String botToEvaluateName,
+            UUID uuidBotToEvaluate) {
         final var simulator = new SimulationService(remoteBotRepository, remoteBotApi, botManagerService);
-        return simulator.runInParallel(uuidBotToEvaluate, botToEvaluateName, UUID.randomUUID(), challengedBotName, TIMES_RANK);
+        return simulator.runInParallel(uuidBotToEvaluate, botToEvaluateName, UUID.randomUUID(), challengedBotName,
+                TIMES_RANK);
     }
 
-
+    /*
+     * @ public normal_behavior
+     * 
+     * @ ensures this.isRanking == ranking;
+     * 
+     * @
+     */
     public void setIsRanking(boolean ranking) {
         isRanking = ranking;
     }
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ ensures \result == isRanking;
+     * 
+     * @
+     */
     public boolean isRanking() {
         return isRanking;
     }
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ ensures \result == hasRank;
+     * 
+     * @
+     */
     public boolean hasRank() {
         return hasRank;
     }
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ ensures this.hasRank == hasRank;
+     * 
+     * @
+     */
     public void setHasRank(boolean hasRank) {
         this.hasRank = hasRank;
     }
@@ -99,10 +174,26 @@ public class RankBotsUseCase {
         return System.currentTimeMillis() - start;
     }
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ ensures \result == rank;
+     * 
+     * @
+     */
     public List<BotRankInfoDto> getRank() {
         return rank;
     }
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires rank != null;
+     * 
+     * @ ensures this.rank == rank;
+     * 
+     * @
+     */
     public void setRank(List<BotRankInfoDto> rank) {
         this.rank = rank;
     }

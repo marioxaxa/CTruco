@@ -19,23 +19,88 @@ import java.util.UUID;
 
 @Service
 public class PlayTournamentMatchesUseCase {
+    /* @ spec_public @ */
     private final TournamentRepository tournamentRepository;
+    /* @ spec_public @ */
     private final RemoteBotRepository remoteBotRepository;
+    /* @ spec_public @ */
     private final RemoteBotApi api;
+    /* @ spec_public @ */
     private final BotManagerService provider;
+    /* @ spec_public @ */
     private final GetMatchUseCase getMatchUseCase;
+    /* @ spec_public @ */
     private final UpdateTournamentUseCase updateTournamentUseCase;
+    /* @ spec_public @ */
     private final UpdateMatchUseCase updateMatchUseCase;
+    /* @ spec_public @ */
     private final RefreshTournamentUseCase refreshUseCase;
 
+    /*
+     * @ public invariant tournamentRepository != null;
+     * 
+     * @ public invariant remoteBotRepository != null;
+     * 
+     * @ public invariant api != null;
+     * 
+     * @ public invariant provider != null;
+     * 
+     * @ public invariant getMatchUseCase != null;
+     * 
+     * @ public invariant updateTournamentUseCase != null;
+     * 
+     * @ public invariant updateMatchUseCase != null;
+     * 
+     * @ public invariant refreshUseCase != null;
+     * 
+     * @
+     */
+
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires tournamentRepository != null;
+     * 
+     * @ requires remoteBotRepository != null;
+     * 
+     * @ requires api != null;
+     * 
+     * @ requires botManagerService != null;
+     * 
+     * @ requires getMatchUseCase != null;
+     * 
+     * @ requires updateTournamentUseCase != null;
+     * 
+     * @ requires updateMatchUseCase != null;
+     * 
+     * @ requires refreshUseCase != null;
+     * 
+     * @ ensures this.tournamentRepository == tournamentRepository;
+     * 
+     * @ ensures this.remoteBotRepository == remoteBotRepository;
+     * 
+     * @ ensures this.api == api;
+     * 
+     * @ ensures this.provider == botManagerService;
+     * 
+     * @ ensures this.getMatchUseCase == getMatchUseCase;
+     * 
+     * @ ensures this.updateTournamentUseCase == updateTournamentUseCase;
+     * 
+     * @ ensures this.updateMatchUseCase == updateMatchUseCase;
+     * 
+     * @ ensures this.refreshUseCase == refreshUseCase;
+     * 
+     * @
+     */
     public PlayTournamentMatchesUseCase(TournamentRepository tournamentRepository,
-                                        RemoteBotRepository remoteBotRepository,
-                                        RemoteBotApi api,
-                                        BotManagerService botManagerService,
-                                        GetMatchUseCase getMatchUseCase,
-                                        UpdateTournamentUseCase updateTournamentUseCase,
-                                        UpdateMatchUseCase updateMatchUseCase,
-                                        RefreshTournamentUseCase refreshUseCase) {
+            RemoteBotRepository remoteBotRepository,
+            RemoteBotApi api,
+            BotManagerService botManagerService,
+            GetMatchUseCase getMatchUseCase,
+            UpdateTournamentUseCase updateTournamentUseCase,
+            UpdateMatchUseCase updateMatchUseCase,
+            RefreshTournamentUseCase refreshUseCase) {
         this.tournamentRepository = tournamentRepository;
         this.remoteBotRepository = remoteBotRepository;
         this.api = api;
@@ -46,14 +111,24 @@ public class PlayTournamentMatchesUseCase {
         this.refreshUseCase = refreshUseCase;
     }
 
-//    public TournamentDTO playAll(TournamentDTO dto) {
-//        Tournament tournament = TournamentConverter.fromDTO(dto, getMatchUseCase);
-//        tournament.playAllAvailable(api, remoteBotRepository, provider);
-//        tournament.setAvailableMatches();
-//        return TournamentConverter.toDTO(tournament);
-//    }
+    // public TournamentDTO playAll(TournamentDTO dto) {
+    // Tournament tournament = TournamentConverter.fromDTO(dto, getMatchUseCase);
+    // tournament.playAllAvailable(api, remoteBotRepository, provider);
+    // tournament.setAvailableMatches();
+    // return TournamentConverter.toDTO(tournament);
+    // }
 
     // TODO - colocar este método no findMatchUseCase
+    // TODO - colocar este método no findMatchUseCase
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires dto != null;
+     * 
+     * @ ensures \result != null;
+     * 
+     * @
+     */
     public List<MatchDTO> getAllAvailableMatches(TournamentDTO dto) {
         Tournament tournament = TournamentConverter.fromDTO(dto, getMatchUseCase);
         tournament.setAvailableMatches();
@@ -63,17 +138,38 @@ public class PlayTournamentMatchesUseCase {
                 .toList();
     }
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires uuid != null;
+     * 
+     * @ requires numberOfSimulations >= 0;
+     * 
+     * @ ensures true;
+     * 
+     * @ also
+     * 
+     * @ public exceptional_behavior
+     * 
+     * @ requires uuid != null;
+     * 
+     * @ signals (EntityNotFoundException);
+     * 
+     * @
+     */
     public void playOne(UUID uuid, int chosenMatchNumber, int numberOfSimulations) {
         Optional<TournamentDTO> dto = tournamentRepository.findTournamentById(uuid);
 
-        if (dto.isEmpty()) throw new EntityNotFoundException("tournament doesn't exist");
+        if (dto.isEmpty())
+            throw new EntityNotFoundException("tournament doesn't exist");
 
         Optional<MatchDTO> chosenMatch = getMatchUseCase.byTournamentUuid(uuid)
                 .stream()
                 .filter(matchDTO -> matchDTO.matchNumber() == chosenMatchNumber)
                 .findFirst();
 
-        if (chosenMatch.isEmpty()) throw new EntityNotFoundException("the chosenMatch doesn't exist");
+        if (chosenMatch.isEmpty())
+            throw new EntityNotFoundException("the chosenMatch doesn't exist");
 
         UUID chosenMatchId = chosenMatch.get().uuid();
 
@@ -90,6 +186,5 @@ public class PlayTournamentMatchesUseCase {
         tournament.playByMatchUuid(chosenMatchId, api, provider, remoteBotRepository, numberOfSimulations);
         return tournament;
     }
-
 
 }

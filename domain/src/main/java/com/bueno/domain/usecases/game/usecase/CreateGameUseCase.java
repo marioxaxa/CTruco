@@ -47,15 +47,55 @@ import java.util.Objects;
 @Service
 public class CreateGameUseCase {
 
+    /* @ spec_public @ */
     private final GameRepository gameRepo;
+    /* @ spec_public @ */
     private final UserRepository userRepo;
+    /* @ spec_public @ */
     private final RemoteBotRepository botRepository;
+    /* @ spec_public @ */
     private final RemoteBotApi remoteBotApi;
+    /* @ spec_public @ */
     private final BotManagerService botManagerService;
 
+    /*
+     * @ public invariant gameRepo != null;
+     * 
+     * @ public invariant botRepository != null;
+     * 
+     * @ public invariant remoteBotApi != null;
+     * 
+     * @ public invariant botManagerService != null;
+     * 
+     * @
+     */
+
     @Autowired
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires gameRepo != null;
+     * 
+     * @ requires botRepository != null;
+     * 
+     * @ requires remoteBotApi != null;
+     * 
+     * @ requires botManagerService != null;
+     * 
+     * @ ensures this.gameRepo == gameRepo;
+     * 
+     * @ ensures this.userRepo == userRepo;
+     * 
+     * @ ensures this.botRepository == botRepository;
+     * 
+     * @ ensures this.remoteBotApi == remoteBotApi;
+     * 
+     * @ ensures this.botManagerService == botManagerService;
+     * 
+     * @
+     */
     public CreateGameUseCase(GameRepository gameRepo, UserRepository userRepo,
-                             RemoteBotRepository botRepository, RemoteBotApi remoteBotApi, BotManagerService botManagerService) {
+            RemoteBotRepository botRepository, RemoteBotApi remoteBotApi, BotManagerService botManagerService) {
         this.gameRepo = Objects.requireNonNull(gameRepo);
         this.userRepo = userRepo;
         this.botRepository = Objects.requireNonNull(botRepository);
@@ -63,10 +103,53 @@ public class CreateGameUseCase {
         this.botManagerService = botManagerService;
     }
 
-    public CreateGameUseCase(GameRepository gameRepo, RemoteBotRepository botRepository, RemoteBotApi remoteBotApi, BotManagerService botManagerService) {
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires gameRepo != null;
+     * 
+     * @ requires botRepository != null;
+     * 
+     * @ requires remoteBotApi != null;
+     * 
+     * @ requires botManagerService != null;
+     * 
+     * @ ensures this.gameRepo == gameRepo;
+     * 
+     * @ ensures this.userRepo == null;
+     * 
+     * @ ensures this.botRepository == botRepository;
+     * 
+     * @ ensures this.remoteBotApi == remoteBotApi;
+     * 
+     * @ ensures this.botManagerService == botManagerService;
+     * 
+     * @
+     */
+    public CreateGameUseCase(GameRepository gameRepo, RemoteBotRepository botRepository, RemoteBotApi remoteBotApi,
+            BotManagerService botManagerService) {
         this(gameRepo, null, botRepository, remoteBotApi, botManagerService);
     }
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires request != null;
+     * 
+     * @ requires userRepo != null;
+     * 
+     * @ ensures \result != null;
+     * 
+     * @ signals (NullPointerException e) request == null;
+     * 
+     * @ signals (NoSuchElementException e) true;
+     * 
+     * @ signals (EntityNotFoundException e) true;
+     * 
+     * @ signals (IllegalGameEnrolmentException e) true;
+     * 
+     * @
+     */
     public IntelDto createForUserAndBot(CreateForUserAndBotDto request) {
         Objects.requireNonNull(request, "Request not be null!");
 
@@ -92,6 +175,19 @@ public class CreateGameUseCase {
         return !Objects.requireNonNull(botManagerService.providersNames()).contains(botName);
     }
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires request != null;
+     * 
+     * @ ensures \result != null;
+     * 
+     * @ signals (NullPointerException e) request == null;
+     * 
+     * @ signals (NoSuchElementException e) true;
+     * 
+     * @
+     */
     public IntelDto createDetached(CreateDetachedDto request) {
         Objects.requireNonNull(request, "Request model not be null!");
 
@@ -104,6 +200,19 @@ public class CreateGameUseCase {
         return create(userPlayer, botPlayer);
     }
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires request != null;
+     * 
+     * @ ensures \result != null;
+     * 
+     * @ signals (NullPointerException e) request == null;
+     * 
+     * @ signals (NoSuchElementException e) true;
+     * 
+     * @
+     */
     public IntelDto createForBots(CreateForBotsDto request) {
         Objects.requireNonNull(request);
 

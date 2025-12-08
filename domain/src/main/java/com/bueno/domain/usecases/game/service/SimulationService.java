@@ -19,23 +19,73 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 public class SimulationService {
+    /* @ spec_public @ */
     private final RemoteBotRepository remoteBotRepository;
+    /* @ spec_public @ */
     private final RemoteBotApi remoteBotApi;
+    /* @ spec_public @ */
     private final BotManagerService botManagerService;
 
-    public SimulationService(RemoteBotRepository remoteBotRepository, RemoteBotApi botApi, BotManagerService providerService) {
+    /*
+     * @ public invariant remoteBotRepository != null;
+     * 
+     * @ public invariant remoteBotApi != null;
+     * 
+     * @ public invariant botManagerService != null;
+     * 
+     * @
+     */
+
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires remoteBotRepository != null;
+     * 
+     * @ requires botApi != null;
+     * 
+     * @ requires providerService != null;
+     * 
+     * @ ensures this.remoteBotRepository == remoteBotRepository;
+     * 
+     * @ ensures this.remoteBotApi == botApi;
+     * 
+     * @ ensures this.botManagerService == providerService;
+     * 
+     * @
+     */
+    public SimulationService(RemoteBotRepository remoteBotRepository, RemoteBotApi botApi,
+            BotManagerService providerService) {
         this.remoteBotRepository = remoteBotRepository;
         this.remoteBotApi = botApi;
         this.botManagerService = providerService;
     }
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires uuidBotToEvaluate != null;
+     * 
+     * @ requires botToEvaluateName != null;
+     * 
+     * @ requires challengedBotuuid != null;
+     * 
+     * @ requires challengedBotName != null;
+     * 
+     * @ requires times > 0;
+     * 
+     * @ ensures \result != null;
+     * 
+     * @ ensures \result.size() <= times;
+     * 
+     * @
+     */
     public List<PlayWithBotsDto> runInParallel(UUID uuidBotToEvaluate,
-                                               String botToEvaluateName,
-                                               UUID challengedBotuuid,
-                                               String challengedBotName,
-                                               int times) {
-        final Callable<PlayWithBotsDto> gameWaitingForBeCreatedAndPlayed =
-                () -> simulate(uuidBotToEvaluate, botToEvaluateName, challengedBotuuid, challengedBotName);
+            String botToEvaluateName,
+            UUID challengedBotuuid,
+            String challengedBotName,
+            int times) {
+        final Callable<PlayWithBotsDto> gameWaitingForBeCreatedAndPlayed = () -> simulate(uuidBotToEvaluate,
+                botToEvaluateName, challengedBotuuid, challengedBotName);
 
         return Stream.generate(() -> gameWaitingForBeCreatedAndPlayed)
                 .limit(times)
@@ -58,20 +108,28 @@ public class SimulationService {
                 remoteBotApi,
                 botManagerService);
         createGameUseCase.createForBots(requestModel);
-        final var game = gameRepository.findByPlayerUuid(requestModel.bot1Uuid()).map(GameConverter::fromDto).orElseThrow();
-        final var botUseCase = new BotUseCase(gameRepository, remoteBotRepository, remoteBotApi, botManagerService, evaluateName, challengedName);
+        final var game = gameRepository.findByPlayerUuid(requestModel.bot1Uuid()).map(GameConverter::fromDto)
+                .orElseThrow();
+        final var botUseCase = new BotUseCase(gameRepository, remoteBotRepository, remoteBotApi, botManagerService,
+                evaluateName, challengedName);
 
-        //Plays the game
+        // Plays the game
         final var intel = botUseCase.playWhenNecessary(game, botManagerService);
 
         final var winnerUUID = intel.gameWinner().orElseThrow();
-        final var winnerName = winnerUUID.equals(requestModel.bot1Uuid()) ?
-                requestModel.bot1Name() : requestModel.bot2Name();
+        final var winnerName = winnerUUID.equals(requestModel.bot1Uuid()) ? requestModel.bot1Name()
+                : requestModel.bot2Name();
         System.out.println("Winner: " + winnerName);
         return new PlayWithBotsDto(winnerUUID, winnerName);
     }
 
-
+    /*
+     * @ private normal_behavior
+     * 
+     * @ ensures \result != null;
+     * 
+     * @
+     */
     private Function<Callable<PlayWithBotsDto>, PlayWithBotsDto> executeGameCall() {
         return gameCall -> {
             try {

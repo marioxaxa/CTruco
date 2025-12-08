@@ -19,23 +19,72 @@ public class EvaluateBotsUseCase {
     public static final int EVALUATE_TIMES = 31;
     private final UUID uuidBotToEvaluate = UUID.randomUUID();
     private String botToEvaluateName;
+    /* @ spec_public @ */
     private final RemoteBotRepository remoteBotRepository;
+    /* @ spec_public @ */
     private final RemoteBotApi botApi;
+    /* @ spec_public @ */
     private final BotManagerService providerService;
 
+    /*
+     * @ public invariant remoteBotRepository != null;
+     * 
+     * @ public invariant botApi != null;
+     * 
+     * @ public invariant providerService != null;
+     * 
+     * @
+     */
+
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires remoteBotRepository != null;
+     * 
+     * @ requires botApi != null;
+     * 
+     * @ requires providerService != null;
+     * 
+     * @ ensures this.remoteBotRepository == remoteBotRepository;
+     * 
+     * @ ensures this.botApi == botApi;
+     * 
+     * @ ensures this.providerService == providerService;
+     * 
+     * @
+     */
     public EvaluateBotsUseCase(RemoteBotRepository remoteBotRepository,
-                               RemoteBotApi botApi,
-                               BotManagerService providerService
-    ) {
+            RemoteBotApi botApi,
+            BotManagerService providerService) {
         this.remoteBotRepository = remoteBotRepository;
         this.botApi = botApi;
         this.providerService = providerService;
     }
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires botNames != null;
+     * 
+     * @ requires botToEvaluateName != null;
+     * 
+     * @ ensures \result != null;
+     * 
+     * @
+     */
     public EvaluateResultsDto evaluate(List<String> botNames, String botToEvaluateName) {
         return executeSimulations(botToEvaluateName, botNames);
     }
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires botToEvaluateName != null;
+     * 
+     * @ ensures \result != null;
+     * 
+     * @
+     */
     public EvaluateResultsDto evaluateWithAll(String botToEvaluateName) {
         List<String> botNames = providerService.providersNames();
         return executeSimulations(botToEvaluateName, botNames);
@@ -52,13 +101,15 @@ public class EvaluateBotsUseCase {
         final long computingTime = (end - start);
 
         final long evaluatedBotWins = results.stream().mapToLong(this::resultAccumulator).sum();
-        final long defeatedOpponents = results.stream().mapToLong(match -> WinsAccumulatorService.getWins(match, botToEvaluateName, EVALUATE_TIMES)).sum();
+        final long defeatedOpponents = results.stream()
+                .mapToLong(match -> WinsAccumulatorService.getWins(match, botToEvaluateName, EVALUATE_TIMES)).sum();
         final long numberOfOpponents = results.size();
 
         double winRate = ((double) evaluatedBotWins / numberOfGames) * 100;
         double percentile = (((double) defeatedOpponents / (botNames.size() - 1)) * 100);
 
-        return new EvaluateResultsDto(botToEvaluateName,computingTime, numberOfGames, evaluatedBotWins, winRate, percentile, defeatedOpponents, numberOfOpponents);
+        return new EvaluateResultsDto(botToEvaluateName, computingTime, numberOfGames, evaluatedBotWins, winRate,
+                percentile, defeatedOpponents, numberOfOpponents);
     }
 
     private boolean isNotEvaluatedBot(String opponentName) {
@@ -67,13 +118,15 @@ public class EvaluateBotsUseCase {
 
     private List<PlayWithBotsDto> run(String challengedBotName) {
         final var playManyService = new SimulationService(remoteBotRepository, botApi, providerService);
-        return playManyService.runInParallel(uuidBotToEvaluate, botToEvaluateName, UUID.randomUUID(), challengedBotName, EVALUATE_TIMES);
+        return playManyService.runInParallel(uuidBotToEvaluate, botToEvaluateName, UUID.randomUUID(), challengedBotName,
+                EVALUATE_TIMES);
     }
 
     private Long resultAccumulator(List<PlayWithBotsDto> results) {
         Map<String, Long> collectResults = results.stream()
                 .collect(Collectors.groupingBy(PlayWithBotsDto::name, Collectors.counting()));
-        if (!collectResults.containsKey(botToEvaluateName)) return 0L;
+        if (!collectResults.containsKey(botToEvaluateName))
+            return 0L;
         return collectResults.get(botToEvaluateName);
     }
 

@@ -32,24 +32,71 @@ import java.util.UUID;
 @Service
 public class RegisterUserUseCase {
 
+    /* @ spec_public @ */
     private final UserRepository repo;
 
+    /* @ public invariant repo != null; @ */
+
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires repo != null;
+     * 
+     * @ ensures this.repo == repo;
+     * 
+     * @
+     */
     public RegisterUserUseCase(UserRepository repo) {
         this.repo = Objects.requireNonNull(repo, "User repository must not be null.");
     }
 
-    public RegisterUserResponseDto create(RegisterUserRequestDto request){
-        Objects.requireNonNull(request,"Request model must not be null.");
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires request != null;
+     * 
+     * @ requires request.username() != null;
+     * 
+     * @ requires request.password() != null;
+     * 
+     * @ requires request.email() != null;
+     * 
+     * @ ensures \result != null;
+     * 
+     * @ ensures \result.username().equals(request.username());
+     * 
+     * @ ensures \result.email().equals(request.email());
+     * 
+     * @ also
+     * 
+     * @ public exceptional_behavior
+     * 
+     * @ requires request == null;
+     * 
+     * @ signals (NullPointerException);
+     * 
+     * @ also
+     * 
+     * @ public exceptional_behavior
+     * 
+     * @ requires request != null;
+     * 
+     * @ signals (EntityAlreadyExistsException);
+     * 
+     * @
+     */
+    public RegisterUserResponseDto create(RegisterUserRequestDto request) {
+        Objects.requireNonNull(request, "Request model must not be null.");
 
         var inputError = "";
 
-        if(repo.findByUsername(request.username()).isPresent())
+        if (repo.findByUsername(request.username()).isPresent())
             inputError += "This username is already in use: " + request.username() + "\n";
 
-        if(repo.findByEmail(request.email()).isPresent())
+        if (repo.findByEmail(request.email()).isPresent())
             inputError += "This email is already in use: " + request.email();
 
-        if(!inputError.isEmpty())
+        if (!inputError.isEmpty())
             throw new EntityAlreadyExistsException(inputError);
 
         final ApplicationUserDto user = new ApplicationUserDto(

@@ -33,18 +33,49 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.UUID;
 
-
 @Service
 public class RemoveGameUseCase {
 
+    /* @ spec_public @ */
     private final GameRepository gameRepo;
+    /* @ spec_public @ */
     private final GameResultRepository gameResultRepo;
 
+    /*
+     * @ public invariant gameRepo != null;
+     * 
+     * @ public invariant gameResultRepo != null;
+     * 
+     * @
+     */
+
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires gameRepo != null;
+     * 
+     * @ requires gameResultRepo != null;
+     * 
+     * @ ensures this.gameRepo == gameRepo;
+     * 
+     * @ ensures this.gameResultRepo == gameResultRepo;
+     * 
+     * @
+     */
     public RemoveGameUseCase(GameRepository gameRepo, GameResultRepository gameResultRepo) {
         this.gameRepo = gameRepo;
         this.gameResultRepo = gameResultRepo;
     }
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires minutes >= 0;
+     * 
+     * @ ensures \result != null;
+     * 
+     * @
+     */
     public List<UUID> byInactivityAfter(int minutes) {
         final boolean isFromInactivity = true;
         final List<UUID> gamesToRemove = gameRepo.findAllInactiveAfter(minutes)
@@ -55,12 +86,32 @@ public class RemoveGameUseCase {
         return gamesToRemove;
     }
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires game != null;
+     * 
+     * @ requires game.hands() != null && !game.hands().isEmpty();
+     * 
+     * @ ensures \result != null;
+     * 
+     * @
+     */
     public UUID inactivePlayerUuid(GameDto game) {
         final HandDto currentHand = game.hands().get(game.hands().size() - 1);
         UUID uuid = currentHand.currentPlayer().uuid();
         return uuid;
     }
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires userUuid != null;
+     * 
+     * @ signals (NoSuchElementException e) true;
+     * 
+     * @
+     */
     public void byUserUuid(UUID userUuid, boolean isFromInactive) {
         final UUID uuid = Objects.requireNonNull(userUuid, "User UUID must not be null.");
         final GameDto game = gameRepo.findByPlayerUuid(Objects.requireNonNull(uuid))
@@ -68,14 +119,28 @@ public class RemoveGameUseCase {
         gameRepo.delete(game.gameUuid());
         if (isFromInactive)
             gameResultRepo.save(createGameResultFromAbandon(game, userUuid));
-        else gameResultRepo.save(createGameResultFromDto(game));
+        else
+            gameResultRepo.save(createGameResultFromDto(game));
     }
 
+    /*
+     * @ private normal_behavior
+     * 
+     * @ requires game != null;
+     * 
+     * @ requires quitterUuid != null;
+     * 
+     * @ ensures \result != null;
+     * 
+     * @
+     */
     private GameResultDto createGameResultFromAbandon(GameDto game, UUID quitterUuid) {
         final UUID player1uuid = game.player1().uuid().equals(quitterUuid)
-                ? game.player1().uuid() : game.player2().uuid();
+                ? game.player1().uuid()
+                : game.player2().uuid();
         final UUID player2uuid = game.player1().uuid().equals(quitterUuid)
-                ? game.player2().uuid() : game.player1().uuid();
+                ? game.player2().uuid()
+                : game.player1().uuid();
         final UUID winnerUuid = player1uuid.equals(quitterUuid) ? player2uuid : player1uuid;
         final int player1Score = player1uuid.equals(winnerUuid) ? 12 : 0;
         final int player2Score = player2uuid.equals(winnerUuid) ? 12 : 0;
@@ -91,6 +156,15 @@ public class RemoveGameUseCase {
                 player2Score);
     }
 
+    /*
+     * @ private normal_behavior
+     * 
+     * @ requires game != null;
+     * 
+     * @ ensures \result != null;
+     * 
+     * @
+     */
     private GameResultDto createGameResultFromDto(GameDto game) {
         final UUID player1uuid = game.player1().uuid();
         final UUID player2uuid = game.player2().uuid();

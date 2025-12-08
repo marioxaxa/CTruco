@@ -38,6 +38,17 @@ import java.util.stream.Collectors;
 
 public class SpiModelAdapter {
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires player != null;
+     * 
+     * @ requires intel != null;
+     * 
+     * @ ensures \result != null;
+     * 
+     * @
+     */
     public static GameIntel toGameIntel(Player player, Intel intel) {
         final Function<UUID, RoundResult> toRoundResult = uuid -> uuid == null ? RoundResult.DREW
                 : uuid.equals(player.getUuid()) ? RoundResult.WON : RoundResult.LOST;
@@ -46,8 +57,8 @@ public class SpiModelAdapter {
                 .map(winner -> winner.orElse(null))
                 .map(toRoundResult).collect(Collectors.toList());
 
-        final Function<List<Card>, List<TrucoCard>> toTrucoCardList = cardList ->
-                cardList.stream().map(SpiModelAdapter::toTrucoCard).collect(Collectors.toList());
+        final Function<List<Card>, List<TrucoCard>> toTrucoCardList = cardList -> cardList.stream()
+                .map(SpiModelAdapter::toTrucoCard).collect(Collectors.toList());
 
         final List<TrucoCard> openCards = toTrucoCardList.apply(intel.openCards());
         final List<TrucoCard> botCards = toTrucoCardList.apply(player.getCards());
@@ -60,15 +71,47 @@ public class SpiModelAdapter {
                 .build();
     }
 
-    public static Card toCard(TrucoCard card){
-        if(card == null) return null;
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires card != null;
+     * 
+     * @ ensures \result != null;
+     * 
+     * @ public normal_behavior
+     * 
+     * @ requires card == null;
+     * 
+     * @ ensures \result == null;
+     * 
+     * @
+     */
+    public static Card toCard(TrucoCard card) {
+        if (card == null)
+            return null;
         final String rankName = card.getRank().toString();
         final String suitName = card.getSuit().toString();
         return Card.of(Rank.ofSymbol(rankName), Suit.ofSymbol(suitName));
     }
 
-    private static TrucoCard toTrucoCard(Card card){
-        if(card == null) return null;
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires card != null;
+     * 
+     * @ ensures \result != null;
+     * 
+     * @ public normal_behavior
+     * 
+     * @ requires card == null;
+     * 
+     * @ ensures \result == null;
+     * 
+     * @
+     */
+    private static TrucoCard toTrucoCard(Card card) {
+        if (card == null)
+            return null;
         final String rankName = card.getRank().toString();
         final String suitName = card.getSuit().toString();
         return TrucoCard.of(CardRank.ofSymbol(rankName), CardSuit.ofSymbol(suitName));

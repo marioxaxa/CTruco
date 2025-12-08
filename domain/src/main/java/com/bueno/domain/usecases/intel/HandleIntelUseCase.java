@@ -40,13 +40,34 @@ import java.util.stream.Collectors;
 @Service
 public class HandleIntelUseCase {
 
+    /* @ spec_public @ */
     private final GameRepository repo;
 
+    /* @ public invariant repo != null; @ */
+
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires repo != null;
+     * 
+     * @ ensures this.repo == repo;
+     * 
+     * @
+     */
     public HandleIntelUseCase(GameRepository repo) {
         this.repo = Objects.requireNonNull(repo);
     }
 
-    public IntelSinceDto findIntelSince(UUID uuid, Instant lastIntelTimestamp){
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires uuid != null;
+     * 
+     * @ ensures \result != null;
+     * 
+     * @
+     */
+    public IntelSinceDto findIntelSince(UUID uuid, Instant lastIntelTimestamp) {
         final var game = getGameOrThrow(uuid);
         final var intelSince = game.getIntelSince(lastIntelTimestamp).stream()
                 .map(IntelConverter::toDto)
@@ -54,23 +75,67 @@ public class HandleIntelUseCase {
         return new IntelSinceDto(lastIntelTimestamp, intelSince);
     }
 
-    public IntelDto findLastIntel(UUID uuid){
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires uuid != null;
+     * 
+     * @ ensures \result != null;
+     * 
+     * @
+     */
+    public IntelDto findLastIntel(UUID uuid) {
         final var game = getGameOrThrow(uuid);
         return IntelConverter.toDto(game.getIntel());
     }
 
-    public OwnedCardsDto ownedCards(UUID uuid){
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires uuid != null;
+     * 
+     * @ ensures \result != null;
+     * 
+     * @
+     */
+    public OwnedCardsDto ownedCards(UUID uuid) {
         final var game = getGameOrThrow(uuid);
         final var player = game.getPlayer1().getUuid().equals(uuid) ? game.getPlayer1() : game.getPlayer2();
         return new OwnedCardsDto(player.getCards().stream().map(CardConverter::toDto).collect(Collectors.toList()));
     }
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires uuid != null;
+     * 
+     * @ ensures \result != null;
+     * 
+     * @
+     */
     public PlayerTurnDto isPlayerTurn(UUID uuid) {
         final var game = getGameOrThrow(uuid);
         final var playerTurn = uuid.equals(game.getIntel().currentPlayerUuid().orElse(null));
         return new PlayerTurnDto(playerTurn);
     }
 
+    /*
+     * @ private normal_behavior
+     * 
+     * @ requires uuid != null;
+     * 
+     * @ ensures \result != null;
+     * 
+     * @ also
+     * 
+     * @ private exceptional_behavior
+     * 
+     * @ requires uuid != null;
+     * 
+     * @ signals (GameNotFoundException);
+     * 
+     * @
+     */
     private Game getGameOrThrow(UUID uuid) {
         Objects.requireNonNull(uuid, "UUID must not be null.");
         return repo.findByPlayerUuid(uuid).map(GameConverter::fromDto).orElseThrow(

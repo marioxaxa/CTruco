@@ -30,15 +30,55 @@ import java.util.UUID;
 
 @Service
 public class UserRecordUseCase {
+    /* @ spec_public @ */
     private final GameResultRepository gameResultRepository;
+    /* @ spec_public @ */
     private final UserRepository userRepository;
 
+    /*
+     * @ public invariant gameResultRepository != null;
+     * 
+     * @ public invariant userRepository != null;
+     * 
+     * @
+     */
+
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires gameResultRepository != null;
+     * 
+     * @ requires userRepository != null;
+     * 
+     * @ ensures this.gameResultRepository == gameResultRepository;
+     * 
+     * @ ensures this.userRepository == userRepository;
+     * 
+     * @
+     */
     public UserRecordUseCase(GameResultRepository gameResultRepository, UserRepository userRepository) {
         this.gameResultRepository = gameResultRepository;
         this.userRepository = userRepository;
     }
 
-    public UserRecordDto listByUuid(UUID userUuid){
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires userUuid != null;
+     * 
+     * @ ensures \result != null;
+     * 
+     * @ also
+     * 
+     * @ public exceptional_behavior
+     * 
+     * @ requires userUuid != null;
+     * 
+     * @ signals (EntityNotFoundException e) true;
+     * 
+     * @
+     */
+    public UserRecordDto listByUuid(UUID userUuid) {
         var user = userRepository.findByUuid(userUuid)
                 .orElseThrow(() -> new EntityNotFoundException("User not found: " + userUuid));
         var userRecord = gameResultRepository.findAllByUserUuid(userUuid);

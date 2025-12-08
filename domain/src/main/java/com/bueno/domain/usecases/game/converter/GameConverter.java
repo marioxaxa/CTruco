@@ -30,10 +30,31 @@ import java.util.List;
 
 public class GameConverter {
 
-    private GameConverter(){}
+    private GameConverter() {
+    }
 
-    public static GameDto toDto(Game game){
-        if(game == null) return null;
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires game != null;
+     * 
+     * @ ensures \result != null;
+     * 
+     * @ ensures \result.gameUuid() == game.getUuid();
+     * 
+     * @ also
+     * 
+     * @ public normal_behavior
+     * 
+     * @ requires game == null;
+     * 
+     * @ ensures \result == null;
+     * 
+     * @
+     */
+    public static GameDto toDto(Game game) {
+        if (game == null)
+            return null;
 
         return new GameDto(
                 game.getUuid(),
@@ -42,12 +63,31 @@ public class GameConverter {
                 PlayerConverter.toDto(game.getPlayer2()),
                 PlayerConverter.toDto(game.getFirstToPlay()),
                 PlayerConverter.toDto(game.getLastToPlay()),
-                game.getHands().stream().map(HandConverter::toDto).toList()
-        );
+                game.getHands().stream().map(HandConverter::toDto).toList());
     }
 
-    public static Game fromDto(GameDto dto){
-        if(dto == null) return null;
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires dto != null;
+     * 
+     * @ ensures \result != null;
+     * 
+     * @ ensures \result.getUuid() == dto.gameUuid();
+     * 
+     * @ also
+     * 
+     * @ public normal_behavior
+     * 
+     * @ requires dto == null;
+     * 
+     * @ ensures \result == null;
+     * 
+     * @
+     */
+    public static Game fromDto(GameDto dto) {
+        if (dto == null)
+            return null;
         final Player player1 = PlayerConverter.fromDto(dto.player1());
         final Player player2 = PlayerConverter.fromDto(dto.player2());
         final Player firstToPlay = dto.firstToPlay().uuid().equals(player1.getUuid()) ? player1 : player2;

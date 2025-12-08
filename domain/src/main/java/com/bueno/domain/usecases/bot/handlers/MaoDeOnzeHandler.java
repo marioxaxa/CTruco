@@ -31,22 +31,67 @@ import static com.bueno.domain.usecases.bot.converter.SpiModelAdapter.toGameInte
 
 public class MaoDeOnzeHandler implements Handler {
 
+    /* @ spec_public @ */
     private final BotServiceProvider botService;
+    /* @ spec_public @ */
     private final PointsProposalUseCase scoreUseCase;
 
+    /*
+     * @ public invariant botService != null;
+     * 
+     * @ public invariant scoreUseCase != null;
+     * 
+     * @
+     */
+
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires scoreUseCase != null;
+     * 
+     * @ requires botService != null;
+     * 
+     * @ ensures this.scoreUseCase == scoreUseCase;
+     * 
+     * @ ensures this.botService == botService;
+     * 
+     * @
+     */
     public MaoDeOnzeHandler(PointsProposalUseCase scoreUseCase, BotServiceProvider botService) {
         this.scoreUseCase = scoreUseCase;
         this.botService = botService;
     }
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires intel != null;
+     * 
+     * @ requires bot != null;
+     * 
+     * @ requires bot.getUuid() != null;
+     * 
+     * @
+     */
     @Override
     public IntelDto handle(Intel intel, Player bot) {
         final var botUuid = bot.getUuid();
         final var hasAccepted = botService.getMaoDeOnzeResponse(toGameIntel(bot, intel));
-        if (hasAccepted) return scoreUseCase.accept(botUuid);
+        if (hasAccepted)
+            return scoreUseCase.accept(botUuid);
         return scoreUseCase.quit(botUuid);
     }
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires intel != null;
+     * 
+     * @ ensures \result == (intel.isMaoDeOnze() &&
+     * HandPoints.fromIntValue(intel.handPoints()) == HandPoints.ONE);
+     * 
+     * @
+     */
     @Override
     public boolean shouldHandle(Intel intel) {
         final var hasNotDecided = HandPoints.fromIntValue(intel.handPoints()) == HandPoints.ONE;

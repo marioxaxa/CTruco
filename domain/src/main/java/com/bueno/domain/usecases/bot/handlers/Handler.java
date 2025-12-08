@@ -26,5 +26,6 @@ import com.bueno.domain.usecases.intel.dtos.IntelDto;
 
 interface Handler {
     IntelDto handle(Intel intel, Player bot);
+
     boolean shouldHandle(Intel intel);
 }

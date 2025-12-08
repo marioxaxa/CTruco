@@ -32,16 +32,54 @@ import java.util.stream.Collectors;
 
 import static com.bueno.domain.usecases.bot.converter.SpiModelAdapter.toGameIntel;
 
-public class RaiseRequestHandler implements Handler{
+public class RaiseRequestHandler implements Handler {
 
+    /* @ spec_public @ */
     private final BotServiceProvider botService;
+    /* @ spec_public @ */
     private final PointsProposalUseCase scoreUseCase;
 
+    /*
+     * @ public invariant botService != null;
+     * 
+     * @ public invariant scoreUseCase != null;
+     * 
+     * @
+     */
+
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires scoreUseCase != null;
+     * 
+     * @ requires botService != null;
+     * 
+     * @ ensures this.scoreUseCase == scoreUseCase;
+     * 
+     * @ ensures this.botService == botService;
+     * 
+     * @
+     */
     public RaiseRequestHandler(PointsProposalUseCase scoreUseCase, BotServiceProvider botService) {
         this.scoreUseCase = scoreUseCase;
         this.botService = botService;
     }
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires intel != null;
+     * 
+     * @ requires bot != null;
+     * 
+     * @ requires bot.getUuid() != null;
+     * 
+     * @ requires intel.possibleActions() != null;
+     * 
+     * @ signals (IllegalStateException e) true;
+     * 
+     * @
+     */
     @Override
     public IntelDto handle(Intel intel, Player bot) {
         final var botUuid = bot.getUuid();
@@ -50,8 +88,10 @@ public class RaiseRequestHandler implements Handler{
                 .collect(Collectors.toCollection(() -> EnumSet.noneOf(PossibleAction.class)));
 
         var response = botService.getRaiseResponse(toGameIntel(bot, intel));
-        if(isInvalid(response)) throw new IllegalStateException("response must be -1, 0, 1 but was: " + response);
-        if(hasAlreadyReachedHandPointsLimit(actions, response)) response = 0;
+        if (isInvalid(response))
+            throw new IllegalStateException("response must be -1, 0, 1 but was: " + response);
+        if (hasAlreadyReachedHandPointsLimit(actions, response))
+            response = 0;
 
         return switch (response) {
             case -1 -> scoreUseCase.quit(botUuid);
@@ -61,15 +101,45 @@ public class RaiseRequestHandler implements Handler{
         };
     }
 
-    private static boolean isInvalid(int response) {
+    /*
+     * @ public normal_behavior
+     * 
+     * @ ensures \result == (response < -1 || response > 1);
+     * 
+     * @
+     */
+    /* @ pure @ */ private static boolean isInvalid(int response) {
         return response < -1 || response > 1;
     }
 
-    private static boolean hasAlreadyReachedHandPointsLimit(EnumSet<PossibleAction> actions, int response) {
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires actions != null;
+     * 
+     * @ ensures \result == (response == 1 &&
+     * !actions.contains(PossibleAction.RAISE));
+     * 
+     * @
+     */
+    /* @ pure @ */ private static boolean hasAlreadyReachedHandPointsLimit(EnumSet<PossibleAction> actions,
+            int response) {
         return response == 1 && !actions.contains(PossibleAction.RAISE);
     }
 
-    public boolean shouldHandle(Intel intel){
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires intel != null;
+     * 
+     * @ requires intel.possibleActions() != null;
+     * 
+     * @ ensures \result == (!intel.isMaoDeOnze() &&
+     * !intel.possibleActions().contains("PLAY"));
+     * 
+     * @
+     */
+    public boolean shouldHandle(Intel intel) {
         return !intel.isMaoDeOnze() && !intel.possibleActions().contains("PLAY");
     }
 }

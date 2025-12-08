@@ -35,30 +35,39 @@ import java.util.stream.Collectors;
 
 public final class HandResultConverter {
 
-    public static HandResultDto of(Game game){
-        final String player1Type = game.getPlayer1().isBot() ? "BOT" : "USER";
-        final String player2Type = game.getPlayer2().isBot() ? "BOT" : "USER";
-        final String gameType = player1Type + "_" + player2Type;
-        final Hand hand = game.currentHand();
+        /*
+         * @ public normal_behavior
+         * 
+         * @ requires game != null;
+         * 
+         * @ ensures \result != null;
+         * 
+         * @
+         */
+        public static HandResultDto of(Game game) {
+                final String player1Type = game.getPlayer1().isBot() ? "BOT" : "USER";
+                final String player2Type = game.getPlayer2().isBot() ? "BOT" : "USER";
+                final String gameType = player1Type + "_" + player2Type;
+                final Hand hand = game.currentHand();
 
-        final UUID handWinner = hand.getResult()
-                .flatMap(HandResult::getWinner)
-                .map(Player::getUuid).orElse(null);
+                final UUID handWinner = hand.getResult()
+                                .flatMap(HandResult::getWinner)
+                                .map(Player::getUuid).orElse(null);
 
-        final Function<Optional<Player>, UUID> mapToPlayerUuidOrNull =
-                winner -> winner.map(Player::getUuid).orElse(null);
+                final Function<Optional<Player>, UUID> mapToPlayerUuidOrNull = winner -> winner.map(Player::getUuid)
+                                .orElse(null);
 
-        final List<UUID> roundWinners = hand.getRoundsPlayed().stream()
-                .map(Round::getWinner)
-                .map(mapToPlayerUuidOrNull)
-                .collect(Collectors.toList());
+                final List<UUID> roundWinners = hand.getRoundsPlayed().stream()
+                                .map(Round::getWinner)
+                                .map(mapToPlayerUuidOrNull)
+                                .collect(Collectors.toList());
 
-        final List<String> openCards = hand.getOpenCards().stream()
-                .map(card -> card.getRank() + "" + card.getSuit())
-                .collect(Collectors.toList());
+                final List<String> openCards = hand.getOpenCards().stream()
+                                .map(card -> card.getRank() + "" + card.getSuit())
+                                .collect(Collectors.toList());
 
-        final int pointsProposal = hand.getPointsProposal() != null ? hand.getPointsProposal().get() : 0;
-        return new HandResultDto(gameType, game.getUuid(),
-                handWinner, hand.getPoints().get(), pointsProposal, roundWinners, openCards);
-    }
+                final int pointsProposal = hand.getPointsProposal() != null ? hand.getPointsProposal().get() : 0;
+                return new HandResultDto(gameType, game.getUuid(),
+                                handWinner, hand.getPoints().get(), pointsProposal, roundWinners, openCards);
+        }
 }

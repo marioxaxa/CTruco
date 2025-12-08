@@ -30,13 +30,34 @@ import java.util.List;
 @Service
 public class ReportTopWinnersUseCase {
 
+    /* @ spec_public @ */
     private final GameResultRepository resultRepository;
 
+    /* @ public invariant resultRepository != null; @ */
+
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires resultRepository != null;
+     * 
+     * @ ensures this.resultRepository == resultRepository;
+     * 
+     * @
+     */
     public ReportTopWinnersUseCase(GameResultRepository resultRepository) {
         this.resultRepository = resultRepository;
     }
 
-    public TopWinnersDto create(int numberOfTopPlayers){
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires numberOfTopPlayers >= 0;
+     * 
+     * @ ensures \result != null;
+     * 
+     * @
+     */
+    public TopWinnersDto create(int numberOfTopPlayers) {
         final List<PlayerWinsDto> topWinners = resultRepository.findTopWinners(numberOfTopPlayers);
         return new TopWinnersDto(topWinners);
     }

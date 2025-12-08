@@ -33,16 +33,50 @@ import static com.bueno.domain.entities.intel.PossibleAction.PLAY;
 import static com.bueno.domain.usecases.bot.converter.SpiModelAdapter.toCard;
 import static com.bueno.domain.usecases.bot.converter.SpiModelAdapter.toGameIntel;
 
-public class CardPlayingHandler implements Handler{
+public class CardPlayingHandler implements Handler {
 
+    /* @ spec_public @ */
     private final BotServiceProvider botService;
+    /* @ spec_public @ */
     private final PlayCardUseCase cardUseCase;
 
+    /*
+     * @ public invariant botService != null;
+     * 
+     * @ public invariant cardUseCase != null;
+     * 
+     * @
+     */
+
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires cardUseCase != null;
+     * 
+     * @ requires botService != null;
+     * 
+     * @ ensures this.cardUseCase == cardUseCase;
+     * 
+     * @ ensures this.botService == botService;
+     * 
+     * @
+     */
     public CardPlayingHandler(PlayCardUseCase cardUseCase, BotServiceProvider botService) {
         this.botService = botService;
         this.cardUseCase = cardUseCase;
     }
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires intel != null;
+     * 
+     * @ requires bot != null;
+     * 
+     * @ requires bot.getUuid() != null;
+     * 
+     * @
+     */
     @Override
     public IntelDto handle(Intel intel, Player bot) {
         final var botUuid = bot.getUuid();
@@ -50,10 +84,24 @@ public class CardPlayingHandler implements Handler{
         final var card = toCard(chosenCard.content());
         final var requestModel = new PlayCardDto(botUuid, CardConverter.toDto(card));
 
-        if (chosenCard.isDiscard()) return cardUseCase.discard(requestModel);
+        if (chosenCard.isDiscard())
+            return cardUseCase.discard(requestModel);
         return cardUseCase.playCard(requestModel);
     }
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires intel != null;
+     * 
+     * @ requires intel.possibleActions() != null;
+     * 
+     * @ ensures \result ==
+     * intel.possibleActions().stream().map(PossibleAction::valueOf).anyMatch(action
+     * -> action.equals(PLAY));
+     * 
+     * @
+     */
     @Override
     public boolean shouldHandle(Intel intel) {
         return intel.possibleActions().stream()

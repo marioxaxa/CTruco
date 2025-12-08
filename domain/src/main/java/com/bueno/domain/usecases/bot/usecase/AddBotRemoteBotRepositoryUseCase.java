@@ -17,14 +17,67 @@ import java.util.UUID;
 
 @Service
 public class AddBotRemoteBotRepositoryUseCase {
+    /* @ spec_public @ */
     private final RemoteBotRepository remoteBotRepository;
+    /* @ spec_public @ */
     private final UserRepository userRepository;
 
+    /*
+     * @ public invariant remoteBotRepository != null;
+     * 
+     * @ public invariant userRepository != null;
+     * 
+     * @
+     */
+
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires remoteBotRepository != null;
+     * 
+     * @ requires userRepository != null;
+     * 
+     * @ ensures this.remoteBotRepository == remoteBotRepository;
+     * 
+     * @ ensures this.userRepository == userRepository;
+     * 
+     * @
+     */
     public AddBotRemoteBotRepositoryUseCase(RemoteBotRepository remoteBotRepository, UserRepository userRepository) {
         this.remoteBotRepository = remoteBotRepository;
         this.userRepository = userRepository;
     }
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires dtoRequest != null;
+     * 
+     * @ requires dtoRequest.name() != null && dtoRequest.name().trim().length() >=
+     * 4;
+     * 
+     * @ requires dtoRequest.url() != null && dtoRequest.url().trim().length() >= 4;
+     * 
+     * @ requires dtoRequest.port() != null && dtoRequest.port().trim().length() ==
+     * 4;
+     * 
+     * @ requires dtoRequest.repositoryUrl() != null &&
+     * !dtoRequest.repositoryUrl().trim().isEmpty();
+     * 
+     * @ ensures \result != null;
+     * 
+     * @ signals (NullPointerException e) dtoRequest == null || dtoRequest.name() ==
+     * null || dtoRequest.url() == null || dtoRequest.port() == null ||
+     * dtoRequest.repositoryUrl() == null;
+     * 
+     * @ signals (InvalidRequestException e) true;
+     * 
+     * @ signals (EntityAlreadyExistsException e) true;
+     * 
+     * @ signals (EntityNotFoundException e) true;
+     * 
+     * @
+     */
     public RemoteBotResponseModel addBot(RemoteBotRequestModel dtoRequest) {
         Objects.requireNonNull(dtoRequest, "request is null");
         Objects.requireNonNull(dtoRequest.name(), "name is null");
@@ -43,7 +96,6 @@ public class AddBotRemoteBotRepositoryUseCase {
 
         if (dtoRequest.repositoryUrl().trim().isEmpty())
             throw new InvalidRequestException("invalid repository url");
-
 
         TransientRemoteBotDto dto = new TransientRemoteBotDto(UUID.randomUUID(),
                 dtoRequest.userId(),

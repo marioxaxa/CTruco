@@ -33,35 +33,89 @@ import java.util.Objects;
 import java.util.UUID;
 
 public class ActionValidator extends Validator<UUID> {
+    /* @ spec_public @ */
     private final GameRepository gameRepository;
+    /* @ spec_public @ */
     private final PossibleAction action;
 
+    /*
+     * @ public invariant gameRepository != null;
+     * 
+     * @ public invariant action != null;
+     * 
+     * @
+     */
+
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires gameRepository != null;
+     * 
+     * @ requires action != null;
+     * 
+     * @ ensures this.gameRepository == gameRepository;
+     * 
+     * @ ensures this.action == action;
+     * 
+     * @
+     */
     public ActionValidator(GameRepository gameRepository, PossibleAction action) {
         this.gameRepository = gameRepository;
         this.action = action;
     }
 
     @Override
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires uuid != null;
+     * 
+     * @ ensures \result != null;
+     * 
+     * @ also
+     * 
+     * @ public exceptional_behavior
+     * 
+     * @ requires uuid == null;
+     * 
+     * @ signals (NullPointerException e) true;
+     * 
+     * @
+     */
     public Notification validate(UUID uuid) {
-        if(uuid == null) throw new NullPointerException("UUID is null.");
+        if (uuid == null)
+            throw new NullPointerException("UUID is null.");
         final var game = gameRepository.findByPlayerUuid(uuid).map(GameConverter::fromDto)
                 .orElseThrow(() -> new GameNotFoundException("User with UUID " + uuid + " is not in an active game."));
-//        if(game.isDone()) throw new GameNotFoundException("Game is over. Start a new game.");//TODO Definir comportamento do mongodb quando um jogo ativo já acabou
+        // if(game.isDone()) throw new GameNotFoundException("Game is over. Start a new
+        // game.");//TODO Definir comportamento do mongodb quando um jogo ativo já
+        // acabou
 
         final var requester = getRequester(uuid, Objects.requireNonNull(game));
         final var currentHand = game.currentHand();
         final var possibleActions = currentHand.getPossibleActions();
         final var notification = new Notification();
 
-        if(!currentHand.getCurrentPlayer().equals(requester))
+        if (!currentHand.getCurrentPlayer().equals(requester))
             notification.addError("User with UUID " + uuid + " in not the current player.");
 
-        if(!possibleActions.contains(action))
+        if (!possibleActions.contains(action))
             notification.addError("Invalid action for hand state. Valid actions: " + possibleActions);
 
         return notification;
     }
 
+    /*
+     * @ private normal_behavior
+     * 
+     * @ requires uuid != null;
+     * 
+     * @ requires game != null;
+     * 
+     * @ ensures \result != null;
+     * 
+     * @
+     */
     private Player getRequester(UUID uuid, Game game) {
         return game.getPlayer1().getUuid().equals(uuid) ? game.getPlayer1() : game.getPlayer2();
     }

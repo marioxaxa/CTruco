@@ -40,70 +40,120 @@ import java.util.stream.Collectors;
 
 public class HandConverter {
 
-    private HandConverter(){}
+        /*
+         * @ private normal_behavior
+         * 
+         * @ ensures true;
+         * 
+         * @
+         */
+        private HandConverter() {
+        }
 
-    public static HandDto toDto(Hand hand){
-        if(hand == null) return  null;
-        return new HandDto(
-                CardConverter.toDto(hand.getVira()),
-                hand.getDealtCards().stream().map(CardConverter::toDto).toList(),
-                hand.getOpenCards().stream().map(CardConverter::toDto).toList(),
-                hand.getRoundsPlayed().stream().map(RoundConverter::toDto).toList(),
-                hand.getIntelHistory().stream().map(IntelConverter::toDto).toList(),
-                hand.getPossibleActions().stream().map(PossibleAction::toString).collect(Collectors.toSet()),
-                PlayerConverter.toDto(hand.getFirstToPlay()),
-                PlayerConverter.toDto(hand.getLastToPlay()),
-                PlayerConverter.toDto(hand.getCurrentPlayer()),
-                PlayerConverter.toDto(hand.getLastBetRaiser()),
-                PlayerConverter.toDto(hand.getEventPlayer()),
-                hand.getCardToPlayAgainst().map(CardConverter::toDto).orElse(null),
-                hand.getPoints().get(),
-                hand.getPointsProposal() != null ? hand.getPointsProposal().get() : 0,
-                PlayerConverter.toDto(hand.getResult().flatMap(HandResult::getWinner).orElse(null)),
-                hand.getState().className()
-        );
-    }
+        /*
+         * @ public normal_behavior
+         * 
+         * @ requires hand != null;
+         * 
+         * @ ensures \result != null;
+         * 
+         * @ also
+         * 
+         * @ public normal_behavior
+         * 
+         * @ requires hand == null;
+         * 
+         * @ ensures \result == null;
+         * 
+         * @
+         */
+        public static HandDto toDto(Hand hand) {
+                if (hand == null)
+                        return null;
+                return new HandDto(
+                                CardConverter.toDto(hand.getVira()),
+                                hand.getDealtCards().stream().map(CardConverter::toDto).toList(),
+                                hand.getOpenCards().stream().map(CardConverter::toDto).toList(),
+                                hand.getRoundsPlayed().stream().map(RoundConverter::toDto).toList(),
+                                hand.getIntelHistory().stream().map(IntelConverter::toDto).toList(),
+                                hand.getPossibleActions().stream().map(PossibleAction::toString)
+                                                .collect(Collectors.toSet()),
+                                PlayerConverter.toDto(hand.getFirstToPlay()),
+                                PlayerConverter.toDto(hand.getLastToPlay()),
+                                PlayerConverter.toDto(hand.getCurrentPlayer()),
+                                PlayerConverter.toDto(hand.getLastBetRaiser()),
+                                PlayerConverter.toDto(hand.getEventPlayer()),
+                                hand.getCardToPlayAgainst().map(CardConverter::toDto).orElse(null),
+                                hand.getPoints().get(),
+                                hand.getPointsProposal() != null ? hand.getPointsProposal().get() : 0,
+                                PlayerConverter.toDto(hand.getResult().flatMap(HandResult::getWinner).orElse(null)),
+                                hand.getState().className());
+        }
 
-    public static Hand fromDto(HandDto dto, Player player1, Player player2){
-        if(dto == null) return  null;
+        /*
+         * @ public normal_behavior
+         * 
+         * @ requires dto != null;
+         * 
+         * @ requires player1 != null;
+         * 
+         * @ requires player2 != null;
+         * 
+         * @ ensures \result != null;
+         * 
+         * @ also
+         * 
+         * @ public normal_behavior
+         * 
+         * @ requires dto == null;
+         * 
+         * @ ensures \result == null;
+         * 
+         * @
+         */
+        public static Hand fromDto(HandDto dto, Player player1, Player player2) {
+                if (dto == null)
+                        return null;
 
-        final Map<UUID, Player> players = Map.of(player1.getUuid(), player1, player2.getUuid(), player2);
+                final Map<UUID, Player> players = Map.of(player1.getUuid(), player1, player2.getUuid(), player2);
 
-        final var actions = dto.possibleActions().stream()
-                .map(PossibleAction::valueOf).collect(Collectors.toSet());
+                final var actions = dto.possibleActions().stream()
+                                .map(PossibleAction::valueOf).collect(Collectors.toSet());
 
-        final var possibleActions = actions.isEmpty()
-                ? EnumSet.noneOf(PossibleAction.class)
-                : EnumSet.copyOf(actions);
+                final var possibleActions = actions.isEmpty()
+                                ? EnumSet.noneOf(PossibleAction.class)
+                                : EnumSet.copyOf(actions);
 
-        final List<Round> rounds = dto.roundsPlayed().stream()
-                .map(roundDto -> RoundConverter.fromDto(roundDto, player1, player2))
-                .toList();
+                final List<Round> rounds = dto.roundsPlayed().stream()
+                                .map(roundDto -> RoundConverter.fromDto(roundDto, player1, player2))
+                                .toList();
 
-        return new Hand(
-                CardConverter.fromDto(dto.vira()),
-                dto.dealtCards().stream().map(CardConverter::fromDto).toList(),
-                dto.openCards().stream().map(CardConverter::fromDto).toList(),
-                rounds,
-                dto.history().stream().map(IntelConverter::fromDto).toList(),
-                possibleActions,
-                players.get(dto.firstToPlay().uuid()),
-                players.get(dto.lastToPlay().uuid()),
-                dto.currentPlayer() != null ? players.get(dto.currentPlayer().uuid()) : null,
-                dto.lastBetRaiser() != null ? players.get(dto.lastBetRaiser().uuid()) : null,
-                dto.eventPlayer() != null ? players.get(dto.eventPlayer().uuid()) : null,
-                CardConverter.fromDto(dto.cartToPlayAgainst()),
-                HandPoints.fromIntValue(dto.points()),
-                dto.pointsProposal() != 0 ? HandPoints.fromIntValue(dto.pointsProposal()) : null,
-                handResultFromDto(dto),
-                dto.state());
-    }
+                return new Hand(
+                                CardConverter.fromDto(dto.vira()),
+                                dto.dealtCards().stream().map(CardConverter::fromDto).toList(),
+                                dto.openCards().stream().map(CardConverter::fromDto).toList(),
+                                rounds,
+                                dto.history().stream().map(IntelConverter::fromDto).toList(),
+                                possibleActions,
+                                players.get(dto.firstToPlay().uuid()),
+                                players.get(dto.lastToPlay().uuid()),
+                                dto.currentPlayer() != null ? players.get(dto.currentPlayer().uuid()) : null,
+                                dto.lastBetRaiser() != null ? players.get(dto.lastBetRaiser().uuid()) : null,
+                                dto.eventPlayer() != null ? players.get(dto.eventPlayer().uuid()) : null,
+                                CardConverter.fromDto(dto.cartToPlayAgainst()),
+                                HandPoints.fromIntValue(dto.points()),
+                                dto.pointsProposal() != 0 ? HandPoints.fromIntValue(dto.pointsProposal()) : null,
+                                handResultFromDto(dto),
+                                dto.state());
+        }
 
-    private static HandResult handResultFromDto(HandDto dto) {
-        final PlayerDto winner = dto.winner();
-        final HandPoints handPoints = HandPoints.fromIntValue(dto.points());
-        if(winner != null) return HandResult.of(PlayerConverter.fromDto(winner), handPoints);
-        if(handPoints == HandPoints.ZERO) return HandResult.ofDraw();
-        return null;
-    }
+        private static HandResult handResultFromDto(HandDto dto) {
+                final PlayerDto winner = dto.winner();
+                final HandPoints handPoints = HandPoints.fromIntValue(dto.points());
+                if (winner != null)
+                        return HandResult.of(PlayerConverter.fromDto(winner), handPoints);
+                if (handPoints == HandPoints.ZERO)
+                        return HandResult.ofDraw();
+                return null;
+        }
 }

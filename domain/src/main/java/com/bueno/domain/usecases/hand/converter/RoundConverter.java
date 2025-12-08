@@ -31,22 +31,69 @@ import java.util.UUID;
 
 public class RoundConverter {
 
-    private RoundConverter(){}
+    /*
+     * @ private normal_behavior
+     * 
+     * @ ensures true;
+     * 
+     * @
+     */
+    private RoundConverter() {
+    }
 
-    public static RoundDto toDto(Round round){
-        if(round == null) return null;
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires round != null;
+     * 
+     * @ ensures \result != null;
+     * 
+     * @ also
+     * 
+     * @ public normal_behavior
+     * 
+     * @ requires round == null;
+     * 
+     * @ ensures \result == null;
+     * 
+     * @
+     */
+    public static RoundDto toDto(Round round) {
+        if (round == null)
+            return null;
         return new RoundDto(
                 PlayerConverter.toDto(round.getFirstToPlay()),
                 PlayerConverter.toDto(round.getLastToPlay()),
                 PlayerConverter.toDto(round.getWinner().orElse(null)),
                 CardConverter.toDto(round.getVira()),
                 CardConverter.toDto(round.getFirstCard()),
-                CardConverter.toDto(round.getLastCard())
-        );
+                CardConverter.toDto(round.getLastCard()));
     }
 
-    public static Round fromDto(RoundDto dto, Player player1, Player player2){
-        if(dto == null) return null;
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires dto != null;
+     * 
+     * @ requires player1 != null;
+     * 
+     * @ requires player2 != null;
+     * 
+     * @ ensures \result != null;
+     * 
+     * @ also
+     * 
+     * @ public normal_behavior
+     * 
+     * @ requires dto == null;
+     * 
+     * @ ensures \result == null;
+     * 
+     * @
+     */
+    public static Round fromDto(RoundDto dto, Player player1, Player player2) {
+        if (dto == null)
+            return null;
 
         final Map<UUID, Player> players = Map.of(player1.getUuid(), player1, player2.getUuid(), player2);
 
@@ -56,7 +103,6 @@ public class RoundConverter {
                 players.get(dto.lastToPlay().uuid()),
                 CardConverter.fromDto(dto.lastCard()),
                 CardConverter.fromDto(dto.vira()),
-                dto.winner() != null ? players.get(dto.winner().uuid()) : null
-        );
+                dto.winner() != null ? players.get(dto.winner().uuid()) : null);
     }
 }

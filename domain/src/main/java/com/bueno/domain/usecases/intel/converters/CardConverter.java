@@ -27,17 +27,61 @@ import com.bueno.domain.usecases.intel.dtos.CardDto;
 
 public class CardConverter {
 
-    private CardConverter(){}
+    /*
+     * @ private normal_behavior
+     * 
+     * @ ensures true;
+     * 
+     * @
+     */
+    private CardConverter() {
+    }
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires cardDto != null;
+     * 
+     * @ ensures \result != null;
+     * 
+     * @ also
+     * 
+     * @ public normal_behavior
+     * 
+     * @ requires cardDto == null;
+     * 
+     * @ ensures \result == null;
+     * 
+     * @
+     */
     public static Card fromDto(CardDto cardDto) {
-        if(cardDto == null) return null;
+        if (cardDto == null)
+            return null;
         final Rank rank = Rank.ofSymbol(cardDto.rank());
         final Suit suit = Suit.ofSymbol(cardDto.suit());
         return Card.of(rank, suit);
     }
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires card != null;
+     * 
+     * @ ensures \result != null;
+     * 
+     * @ also
+     * 
+     * @ public normal_behavior
+     * 
+     * @ requires card == null;
+     * 
+     * @ ensures \result == null;
+     * 
+     * @
+     */
     public static CardDto toDto(Card card) {
-        if(card == null) return null;
+        if (card == null)
+            return null;
         final String rank = card.getRank().toString();
         final String suit = card.getSuit().toString();
         return new CardDto(rank, suit);

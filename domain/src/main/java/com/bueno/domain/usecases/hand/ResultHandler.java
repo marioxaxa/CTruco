@@ -31,32 +31,78 @@ import com.bueno.domain.usecases.intel.dtos.IntelDto;
 
 class ResultHandler {
 
+    /* @ spec_public @ */
     private final GameRepository gameRepository;
+    /* @ spec_public @ */
     private final GameResultRepository gameResultRepository;
+    /* @ spec_public @ */
     private final HandResultRepository handResultRepository;
 
-    ResultHandler(GameRepository gameRepository, GameResultRepository gameResultRepository, HandResultRepository handResultRepository) {
+    /*
+     * @ public invariant gameRepository != null;
+     * 
+     * @ public invariant gameResultRepository != null;
+     * 
+     * @
+     */
+
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires gameRepository != null;
+     * 
+     * @ requires gameResultRepository != null;
+     * 
+     * @ ensures this.gameRepository == gameRepository;
+     * 
+     * @ ensures this.gameResultRepository == gameResultRepository;
+     * 
+     * @ ensures this.handResultRepository == handResultRepository;
+     * 
+     * @
+     */
+    ResultHandler(GameRepository gameRepository, GameResultRepository gameResultRepository,
+            HandResultRepository handResultRepository) {
         this.gameRepository = gameRepository;
         this.gameResultRepository = gameResultRepository;
         this.handResultRepository = handResultRepository;
     }
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires game != null;
+     * 
+     * @ ensures true;
+     * 
+     * @
+     */
     IntelDto handle(Game game) {
         game.currentHand().getResult().ifPresent(unused -> {
-            if (handResultRepository != null) handResultRepository.save(HandResultConverter.of(game));
+            if (handResultRepository != null)
+                handResultRepository.save(HandResultConverter.of(game));
             updateGameStatus(game);
         });
 
         if (game.isDone()) {
-//            SaveGameResultUseCase usecase = new SaveGameResultUseCase(gameRepository, gameResultRepository);
-//            usecase.save(GameResultConverter.toDto(game));
+            // SaveGameResultUseCase usecase = new SaveGameResultUseCase(gameRepository,
+            // gameResultRepository);
+            // usecase.save(GameResultConverter.toDto(game));
             return IntelConverter.toDto(game.getIntel());
         }
         return null;
     }
 
+    /*
+     * @ private normal_behavior
+     * 
+     * @ requires game != null;
+     * 
+     * @
+     */
     private void updateGameStatus(Game game) {
         game.updateScores();
-        if (!game.isDone()) game.prepareNewHand();
+        if (!game.isDone())
+            game.prepareNewHand();
     }
 }

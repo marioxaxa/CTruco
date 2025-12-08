@@ -32,17 +32,66 @@ import java.util.UUID;
 
 public class PlayWithBotsUseCase {
 
+    /* @ spec_public @ */
     private final RemoteBotRepository remoteBotRepository;
+    /* @ spec_public @ */
     private final RemoteBotApi remoteBotApi;
+    /* @ spec_public @ */
     private final BotManagerService botManagerService;
 
-    public PlayWithBotsUseCase(RemoteBotRepository remoteBotRepository, RemoteBotApi remoteBotApi, BotManagerService botManagerService) {
+    /*
+     * @ public invariant remoteBotRepository != null;
+     * 
+     * @ public invariant remoteBotApi != null;
+     * 
+     * @ public invariant botManagerService != null;
+     * 
+     * @
+     */
+
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires remoteBotRepository != null;
+     * 
+     * @ requires remoteBotApi != null;
+     * 
+     * @ requires botManagerService != null;
+     * 
+     * @ ensures this.remoteBotRepository == remoteBotRepository;
+     * 
+     * @ ensures this.remoteBotApi == remoteBotApi;
+     * 
+     * @ ensures this.botManagerService == botManagerService;
+     * 
+     * @
+     */
+    public PlayWithBotsUseCase(RemoteBotRepository remoteBotRepository, RemoteBotApi remoteBotApi,
+            BotManagerService botManagerService) {
         this.remoteBotRepository = remoteBotRepository;
         this.remoteBotApi = remoteBotApi;
         this.botManagerService = botManagerService;
     }
 
-    public PlayWithBotsResultsDto playWithBots(UUID uuidBot1, String bot1Name, UUID uuidBot2, String bot2Name, int times) {
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires uuidBot1 != null;
+     * 
+     * @ requires bot1Name != null;
+     * 
+     * @ requires uuidBot2 != null;
+     * 
+     * @ requires bot2Name != null;
+     * 
+     * @ requires times > 0;
+     * 
+     * @ ensures \result != null;
+     * 
+     * @
+     */
+    public PlayWithBotsResultsDto playWithBots(UUID uuidBot1, String bot1Name, UUID uuidBot2, String bot2Name,
+            int times) {
         final long start = System.currentTimeMillis();
         final var simulator = new SimulationService(remoteBotRepository, remoteBotApi, botManagerService);
         final List<PlayWithBotsDto> results = simulator.runInParallel(uuidBot1, bot1Name, uuidBot2, bot2Name, times);

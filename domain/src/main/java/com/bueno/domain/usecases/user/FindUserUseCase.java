@@ -30,18 +30,80 @@ import java.util.UUID;
 @Service
 public class FindUserUseCase {
 
+    /* @ spec_public @ */
     private final UserRepository repo;
 
+    /* @ public invariant repo != null; @ */
+
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires repo != null;
+     * 
+     * @ ensures this.repo == repo;
+     * 
+     * @
+     */
     public FindUserUseCase(UserRepository repo) {
         this.repo = Objects.requireNonNull(repo, "User repository must not be null.");
     }
 
-    public ApplicationUserDto findByUUID(UUID uuid){
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires uuid != null;
+     * 
+     * @ ensures \result != null;
+     * 
+     * @ also
+     * 
+     * @ public exceptional_behavior
+     * 
+     * @ requires uuid == null;
+     * 
+     * @ signals (NullPointerException);
+     * 
+     * @ also
+     * 
+     * @ public exceptional_behavior
+     * 
+     * @ requires uuid != null;
+     * 
+     * @ signals (EntityNotFoundException);
+     * 
+     * @
+     */
+    public ApplicationUserDto findByUUID(UUID uuid) {
         return repo.findByUuid(Objects.requireNonNull(uuid))
                 .orElseThrow(() -> new EntityNotFoundException("User not found!"));
     }
 
-    public ApplicationUserDto findByUsername(String username){
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires username != null;
+     * 
+     * @ ensures \result != null;
+     * 
+     * @ also
+     * 
+     * @ public exceptional_behavior
+     * 
+     * @ requires username == null;
+     * 
+     * @ signals (NullPointerException);
+     * 
+     * @ also
+     * 
+     * @ public exceptional_behavior
+     * 
+     * @ requires username != null;
+     * 
+     * @ signals (EntityNotFoundException);
+     * 
+     * @
+     */
+    public ApplicationUserDto findByUsername(String username) {
         return repo.findByUsername(Objects.requireNonNull(username))
                 .orElseThrow(() -> new EntityNotFoundException("User not found!"));
     }

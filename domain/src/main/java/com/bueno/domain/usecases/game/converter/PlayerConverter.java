@@ -28,11 +28,32 @@ import java.util.ArrayList;
 
 public class PlayerConverter {
 
-    private PlayerConverter(){}
+    private PlayerConverter() {
+    }
 
-    public static PlayerDto toDto(Player player){
-        if(player == null) return null;
-        return  new PlayerDto(
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires player != null;
+     * 
+     * @ ensures \result != null;
+     * 
+     * @ ensures \result.uuid() == player.getUuid();
+     * 
+     * @ also
+     * 
+     * @ public normal_behavior
+     * 
+     * @ requires player == null;
+     * 
+     * @ ensures \result == null;
+     * 
+     * @
+     */
+    public static PlayerDto toDto(Player player) {
+        if (player == null)
+            return null;
+        return new PlayerDto(
                 player.getUsername(),
                 player.getUuid(),
                 player.getScore(),
@@ -40,8 +61,28 @@ public class PlayerConverter {
                 player.getCards().stream().map(CardConverter::toDto).toList());
     }
 
-    public static Player fromDto(PlayerDto dto){
-        if(dto == null) return null;
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires dto != null;
+     * 
+     * @ ensures \result != null;
+     * 
+     * @ ensures \result.getUuid() == dto.uuid();
+     * 
+     * @ also
+     * 
+     * @ public normal_behavior
+     * 
+     * @ requires dto == null;
+     * 
+     * @ ensures \result == null;
+     * 
+     * @
+     */
+    public static Player fromDto(PlayerDto dto) {
+        if (dto == null)
+            return null;
         return new Player(
                 new ArrayList<>(dto.cards().stream().map(CardConverter::fromDto).toList()),
                 dto.username(),

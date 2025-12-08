@@ -36,22 +36,66 @@ import static com.bueno.domain.usecases.bot.converter.SpiModelAdapter.toGameInte
 
 public class RaiseHandler implements Handler {
 
+    /* @ spec_public @ */
     private final BotServiceProvider botService;
+    /* @ spec_public @ */
     private final PointsProposalUseCase scoreUseCase;
 
+    /*
+     * @ public invariant botService != null;
+     * 
+     * @ public invariant scoreUseCase != null;
+     * 
+     * @
+     */
+
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires scoreUseCase != null;
+     * 
+     * @ requires botService != null;
+     * 
+     * @ ensures this.scoreUseCase == scoreUseCase;
+     * 
+     * @ ensures this.botService == botService;
+     * 
+     * @
+     */
     public RaiseHandler(PointsProposalUseCase scoreUseCase, BotServiceProvider botService) {
         this.scoreUseCase = scoreUseCase;
         this.botService = botService;
     }
 
-    public IntelDto handle(Intel intel, Player bot){
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires intel != null;
+     * 
+     * @ requires bot != null;
+     * 
+     * @ requires bot.getUuid() != null;
+     * 
+     * @
+     */
+    public IntelDto handle(Intel intel, Player bot) {
         final boolean wantToRaise = botService.decideIfRaises(toGameIntel(bot, intel));
-        if (wantToRaise) return scoreUseCase.raise(bot.getUuid());
+        if (wantToRaise)
+            return scoreUseCase.raise(bot.getUuid());
         return null;
     }
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires intel != null;
+     * 
+     * @ requires intel.possibleActions() != null;
+     * 
+     * @
+     */
     @Override
-    public boolean shouldHandle(Intel intel){
+    public boolean shouldHandle(Intel intel) {
         final var actions = intel.possibleActions().stream()
                 .map(PossibleAction::valueOf)
                 .collect(Collectors.toCollection(() -> EnumSet.noneOf(PossibleAction.class)));

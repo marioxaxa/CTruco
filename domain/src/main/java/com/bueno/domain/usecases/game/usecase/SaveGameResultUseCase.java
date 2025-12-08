@@ -29,18 +29,55 @@ import java.util.Objects;
 
 @Service
 public class SaveGameResultUseCase {
+    /* @ spec_public @ */
     private final GameRepository gameRepository;
+    /* @ spec_public @ */
     private final GameResultRepository gameResultRepository;
 
+    /*
+     * @ public invariant gameRepository != null;
+     * 
+     * @ public invariant gameResultRepository != null;
+     * 
+     * @
+     */
+
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires gameRepository != null;
+     * 
+     * @ requires gameResultRepository != null;
+     * 
+     * @ ensures this.gameRepository == gameRepository;
+     * 
+     * @ ensures this.gameResultRepository == gameResultRepository;
+     * 
+     * @
+     */
     public SaveGameResultUseCase(GameRepository gameRepository, GameResultRepository gameResultRepository) {
         this.gameRepository = gameRepository;
         this.gameResultRepository = gameResultRepository;
     }
 
-
-    public void save(GameResultDto result){
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires result != null;
+     * 
+     * @ also
+     * 
+     * @ public exceptional_behavior
+     * 
+     * @ requires result == null;
+     * 
+     * @ signals (NullPointerException e) true;
+     * 
+     * @
+     */
+    public void save(GameResultDto result) {
         Objects.requireNonNull(result, "Result must not be null");
         gameResultRepository.save(result);
-//        gameRepository.delete(result.gameUuid());
+        // gameRepository.delete(result.gameUuid());
     }
 }

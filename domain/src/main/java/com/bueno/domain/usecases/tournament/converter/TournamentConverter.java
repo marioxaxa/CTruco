@@ -14,6 +14,15 @@ import java.util.Optional;
 @Service
 public class TournamentConverter {
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires tournament != null;
+     * 
+     * @ ensures true;
+     * 
+     * @
+     */
     public static TournamentDTO toDTO(Tournament tournament) {
         List<MatchDTO> matchList = tournament.getMatches().stream().map(MatchConverter::toDTO).toList();
         Optional<MatchDTO> lastMatch = matchList.stream().filter(matchDTO -> matchDTO.next() == null).findFirst();
@@ -23,18 +32,40 @@ public class TournamentConverter {
                 return new TournamentDTO(tournament.getTournamentUUID(),
                         tournament.getParticipantNames(),
                         matchList.stream().map(MatchDTO::uuid).toList(),
-                        tournament.getSize(), tournament.getTimes(), tournament.getFinalAndThirdPlaceMatchTimes(), tournamentWinner);
+                        tournament.getSize(), tournament.getTimes(), tournament.getFinalAndThirdPlaceMatchTimes(),
+                        tournamentWinner);
             }
             return new TournamentDTO(tournament.getTournamentUUID(),
                     tournament.getParticipantNames(),
                     matchList.stream().map(MatchDTO::uuid).toList(),
                     tournament.getSize(), tournament.getTimes(), tournament.getFinalAndThirdPlaceMatchTimes(), null);
         } else {
-            //TODO - trocar isso dps
+            // TODO - trocar isso dps
             return null;
         }
     }
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires dto != null;
+     * 
+     * @ requires getMatchUseCase != null;
+     * 
+     * @ ensures \result != null;
+     * 
+     * @ also
+     * 
+     * @ public exceptional_behavior
+     * 
+     * @ requires dto != null;
+     * 
+     * @ requires getMatchUseCase != null;
+     * 
+     * @ signals (EntityNotFoundException);
+     * 
+     * @
+     */
     public static Tournament fromDTO(TournamentDTO dto, GetMatchUseCase getMatchUseCase) {
         List<Match> matches = dto.matchUUIDs().stream()
                 .map(mUuid -> {
@@ -46,7 +77,7 @@ public class TournamentConverter {
                 .sorted()
                 .toList();
 
-
-        return new Tournament(dto.uuid(), dto.participantsNames(), matches, dto.size(), dto.times(), dto.finalAndThirdPlaceMatchTimes());
+        return new Tournament(dto.uuid(), dto.participantsNames(), matches, dto.size(), dto.times(),
+                dto.finalAndThirdPlaceMatchTimes());
     }
 }
