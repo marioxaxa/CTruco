@@ -36,13 +36,22 @@ import java.util.Objects;
  */
 public final class TrucoCard {
 
-    // @ public invariant rank != null;
-    // @ public invariant suit != null;
-    // @ public invariant cache != null;
-
+    /* @ spec_public @ */
     private static final TrucoCard[] cache = new TrucoCard[41];
+    /* @ spec_public @ */
     private final CardSuit suit;
+    /* @ spec_public @ */
     private final CardRank rank;
+
+    /*
+     * @ public invariant rank != null;
+     * 
+     * @ public invariant suit != null;
+     * 
+     * @ public invariant cache != null;
+     * 
+     * @
+     */
 
     private TrucoCard(CardRank rank, CardSuit suit) {
         this.rank = rank;
@@ -69,19 +78,35 @@ public final class TrucoCard {
      *                                  parameter is not HIDDEN
      */
     /*
-     * @
-     * 
      * @ public normal_behavior
      * 
      * @ requires rank != null;
      * 
      * @ requires suit != null;
      * 
+     * @ requires (rank == CardRank.HIDDEN) == (suit == CardSuit.HIDDEN);
+     * 
      * @ ensures \result != null;
      * 
      * @ ensures \result.rank == rank;
      * 
      * @ ensures \result.suit == suit;
+     * 
+     * @ also
+     * 
+     * @ public exceptional_behavior
+     * 
+     * @ requires rank == null || suit == null;
+     * 
+     * @ signals (NullPointerException);
+     * 
+     * @ also
+     * 
+     * @ public exceptional_behavior
+     * 
+     * @ requires (rank == CardRank.HIDDEN) != (suit == CardSuit.HIDDEN);
+     * 
+     * @ signals (IllegalArgumentException);
      * 
      * @
      */
@@ -104,8 +129,6 @@ public final class TrucoCard {
      * @return TrucoCard representing a closed card, i.e., a discard
      */
     /*
-     * @
-     * 
      * @ public normal_behavior
      * 
      * @ ensures \result != null;
@@ -170,8 +193,6 @@ public final class TrucoCard {
      *                              null.
      */
     /*
-     * @
-     * 
      * @ public normal_behavior
      * 
      * @ requires otherCard != null;
@@ -205,8 +226,6 @@ public final class TrucoCard {
      * @throws NullPointerException if {@code vira} is null.
      */
     /*
-     * @
-     * 
      * @ public normal_behavior
      * 
      * @ requires vira != null;
@@ -255,11 +274,11 @@ public final class TrucoCard {
      * @throws NullPointerException if {@code vira} is null
      */
     /*
-     * @
-     * 
      * @ public normal_behavior
      * 
      * @ requires vira != null;
+     * 
+     * @ ensures \result == (getRank() == vira.getRank().next());
      * 
      * @
      */
@@ -288,6 +307,15 @@ public final class TrucoCard {
      *         parameter and false otherwise
      * @throws NullPointerException if {@code vira} is null
      */
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires vira != null;
+     * 
+     * @ ensures \result == (isManilha(vira) && suit == CardSuit.CLUBS);
+     * 
+     * @
+     */
     public boolean isZap(TrucoCard vira) {
         return isManilha(vira) && suit == CardSuit.CLUBS;
     }
@@ -310,6 +338,15 @@ public final class TrucoCard {
      * @return true if the object is a copas because of the {@code vira} card
      *         parameter and false otherwise
      * @throws NullPointerException if {@code vira} is null
+     */
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires vira != null;
+     * 
+     * @ ensures \result == (isManilha(vira) && suit == CardSuit.HEARTS);
+     * 
+     * @
      */
     public boolean isCopas(TrucoCard vira) {
         return isManilha(vira) && suit == CardSuit.HEARTS;
@@ -334,6 +371,15 @@ public final class TrucoCard {
      *         parameter and false otherwise
      * @throws NullPointerException if {@code vira} is null
      */
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires vira != null;
+     * 
+     * @ ensures \result == (isManilha(vira) && suit == CardSuit.SPADES);
+     * 
+     * @
+     */
     public boolean isEspadilha(TrucoCard vira) {
         return isManilha(vira) && suit == CardSuit.SPADES;
     }
@@ -357,14 +403,37 @@ public final class TrucoCard {
      *         parameter and false otherwise
      * @throws NullPointerException if {@code vira} is null
      */
+    /*
+     * @ public normal_behavior
+     * 
+     * @ requires vira != null;
+     * 
+     * @ ensures \result == (isManilha(vira) && suit == CardSuit.DIAMONDS);
+     * 
+     * @
+     */
     public boolean isOuros(TrucoCard vira) {
         return isManilha(vira) && suit == CardSuit.DIAMONDS;
     }
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ ensures \result == rank;
+     * 
+     * @
+     */
     public CardRank getRank() {
         return rank;
     }
 
+    /*
+     * @ public normal_behavior
+     * 
+     * @ ensures \result == suit;
+     * 
+     * @
+     */
     public CardSuit getSuit() {
         return suit;
     }
