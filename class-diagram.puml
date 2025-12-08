@@ -1,0 +1,601 @@
+@startuml CTruco Class Diagram
+
+' Configurações de estilo
+skinparam classAttributeIconSize 0
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam linetype ortho
+skinparam class {
+    BackgroundColor<<Entity>> #E1F5FE
+    BackgroundColor<<UseCase>> #E8F5E9
+    BackgroundColor<<Repository>> #FFF9C4
+    BackgroundColor<<Service>> #FCE4EC
+    BackgroundColor<<SPI>> #F3E5F5
+    BorderColor Black
+    ArrowColor Black
+}
+
+title Diagrama de Classes - CTruco\nJogo de Truco com Arquitetura Limpa
+
+' ==================== PACKAGE: Domain - Entities ====================
+package "com.bueno.domain.entities" {
+
+    package "deck" <<Rectangle>> {
+        class Card <<Entity>> {
+            - suit: Suit
+            - rank: Rank
+            --
+            + of(rank: Rank, suit: Suit): Card
+            + compareValueWith(other: Card, vira: Card): int
+            + isManha(vira: Card): boolean
+            + isZap(vira: Card): boolean
+        }
+
+        enum Rank {
+            FOUR, FIVE, SIX, SEVEN
+            QUEEN, JACK, KING, ACE
+            TWO, THREE, HIDDEN
+            --
+            + value(): int
+        }
+
+        enum Suit {
+            DIAMONDS, SPADES
+            HEARTS, CLUBS, HIDDEN
+        }
+
+        class Deck <<Entity>> {
+            - cards: List<Card>
+            --
+            + shuffle(): void
+            + take(numberOfCards: int): List<Card>
+            + takeOne(): Card
+            + size(): int
+        }
+
+        Card --> Rank
+        Card --> Suit
+        Deck o--> "40" Card
+    }
+
+    package "player" <<Rectangle>> {
+        class Player <<Entity>> {
+            - uuid: UUID
+            - username: String
+            - score: int
+            - cards: List<Card>
+            - isBot: boolean
+            --
+            {static} + MAX_SCORE: int = 12
+            --
+            + addCard(card: Card): void
+            + removeCard(card: Card): void
+            + increaseScore(points: int): void
+            + hasCard(card: Card): boolean
+        }
+
+        class User <<Entity>> {
+            - uuid: UUID
+            - username: String
+            - password: String
+            - email: String
+            --
+            + of(username: String, password: String, email: String): User
+        }
+
+        Player o--> "*" Card
+    }
+
+    package "hand" <<Rectangle>> {
+        class Hand <<Entity>> {
+            - vira: Card
+            - dealtCards: List<Card>
+            - openCards: List<Card>
+            - roundsPlayed: List<Round>
+            - history: List<Intel>
+            - possibleActions: EnumSet<PossibleAction>
+            - firstToPlay: Player
+            - lastToPlay: Player
+            - currentPlayer: Player
+            - points: HandPoints
+            - pointsProposal: HandPoints
+            - result: HandResult
+            - state: HandState
+            --
+            + playCard(player: Player, card: Card): void
+            + accept(player: Player): void
+            + raise(player: Player, points: int): void
+            + quit(player: Player): void
+        }
+
+        class Round <<Entity>> {
+            - firstToPlay: Player
+            - lastToPlay: Player
+            - winner: Player
+            - vira: Card
+            - firstCard: Card
+            - lastCard: Card
+            --
+            + getWinner(): Player
+        }
+
+        class HandResult <<Entity>> {
+            - winner: Player
+            - loser: Player
+            - points: int
+        }
+
+        class HandPoints <<Entity>> {
+            - value: int
+            --
+            + increase(): HandPoints
+            + getValue(): int
+        }
+
+        interface HandState {
+            + playCard(player: Player, card: Card): void
+            + accept(player: Player): void
+            + raise(player: Player, points: int): void
+            + quit(player: Player): void
+        }
+
+        class Done
+        class NoCard
+        class OneCard
+        class WaitingRaiseResponse
+        class WaitingMaoDeOnze
+
+        Hand --> HandState
+        Hand o--> "*" Round
+        Hand --> HandPoints
+        Hand --> HandResult
+        Hand --> Card
+        Hand --> Player
+
+        HandState <|.. Done
+        HandState <|.. NoCard
+        HandState <|.. OneCard
+        HandState <|.. WaitingRaiseResponse
+        HandState <|.. WaitingMaoDeOnze
+
+        Round --> Player
+        Round --> Card
+        HandResult --> Player
+    }
+
+    package "game" <<Rectangle>> {
+        class Game <<Entity>> {
+            - uuid: UUID
+            - deck: Deck
+            - timestamp: LocalDateTime
+            - player1: Player
+            - player2: Player
+            - hands: List<Hand>
+            - firstToPlay: Player
+            - lastToPlay: Player
+            --
+            + playCard(player: Player, card: Card): void
+            + accept(player: Player): void
+            + raise(player: Player, points: int): void
+            + quit(player: Player): void
+            + isDone(): boolean
+            + getWinner(): Player
+            + currentHand(): Hand
+        }
+
+        class GameRuleViolationException {
+            - message: String
+        }
+
+        Game o--> "2" Player
+        Game o--> "*" Hand
+        Game --> Deck
+    }
+
+    package "intel" <<Rectangle>> {
+        class Intel <<Entity>> {
+            - timestamp: Instant
+            - gameIsDone: boolean
+            - gameWinner: UUID
+            - maoDeOnze: boolean
+            - handPoints: Integer
+            - handPointsProposal: Integer
+            - roundWinnersUsernames: List<Optional<String>>
+            - roundWinnersUuid: List<Optional<UUID>>
+            - roundsPlayed: int
+            - vira: Card
+            - openCards: List<Card>
+            - possibleActions: EnumSet<PossibleAction>
+            - event: Event
+            --
+            + of(game: Game, player: Player, event: Event): Intel
+        }
+
+        enum Event {
+            CARD_PLAYED, CARD_ASKED
+            RAISE, ACCEPTED, QUIT
+            MAO_DE_ONZE_ASKED
+        }
+
+        enum PossibleAction {
+            PLAY, RAISE, ACCEPT
+            QUIT, MAO_DE_ONZE
+        }
+
+        Intel --> Event
+        Intel --> PossibleAction
+        Intel --> Card
+    }
+
+    package "tournament" <<Rectangle>> {
+        class Tournament <<Entity>> {
+            - tournamentUUID: UUID
+            - size: int
+            - participantNames: List<String>
+            - times: int
+            - finalAndThirdPlaceMatchTimes: int
+            - matches: List<Match>
+            --
+            + createMatches(): void
+            + playMatches(): void
+        }
+
+        class Match <<Entity>> {
+            - id: UUID
+            - matchNumber: int
+            - p1Name: String
+            - p2Name: String
+            - isAvailable: boolean
+            - winnerName: String
+            - p1Score: long
+            - p2Score: long
+            - timeToExecute: long
+            --
+            + play(): void
+        }
+
+        Tournament o--> "*" Match
+    }
+}
+
+' ==================== PACKAGE: Domain - Use Cases ====================
+package "com.bueno.domain.usecases" {
+
+    package "game" <<Rectangle>> {
+        interface GameRepository <<Repository>> {
+            + save(game: Game): UUID
+            + findByUuid(uuid: UUID): Game
+            + delete(uuid: UUID): void
+        }
+
+        interface GameResultRepository <<Repository>> {
+            + save(result: GameResultDto): void
+            + findAll(): List<GameResultDto>
+        }
+
+        interface RankBotsRepository <<Repository>> {
+            + save(botName: String, wins: int): void
+            + findAll(): List<BotRankInfoDto>
+        }
+
+        class CreateGameUseCase <<UseCase>> {
+            - gameRepository: GameRepository
+            --
+            + create(dto: CreateForBotsDto): UUID
+            + create(dto: CreateForUserAndBotDto): UUID
+        }
+
+        class PlayWithBotsUseCase <<UseCase>> {
+            - gameRepository: GameRepository
+            --
+            + play(dto: PlayWithBotsDto): PlayWithBotsResultsDto
+        }
+
+        class RankBotsUseCase <<UseCase>> {
+            - rankBotsRepository: RankBotsRepository
+            --
+            + rank(botNames: List<String>, times: int): void
+        }
+
+        CreateGameUseCase --> GameRepository
+        PlayWithBotsUseCase --> GameRepository
+        RankBotsUseCase --> RankBotsRepository
+    }
+
+    package "hand" <<Rectangle>> {
+        interface HandResultRepository <<Repository>> {
+            + save(result: HandResultDto): void
+        }
+
+        class PlayCardUseCase <<UseCase>> {
+            - gameRepository: GameRepository
+            --
+            + playCard(dto: PlayCardDto): void
+        }
+
+        class PointsProposalUseCase <<UseCase>> {
+            - gameRepository: GameRepository
+            --
+            + raise(gameUuid: UUID, player: Player): void
+            + accept(gameUuid: UUID, player: Player): void
+            + quit(gameUuid: UUID, player: Player): void
+        }
+
+        PlayCardUseCase --> GameRepository
+        PointsProposalUseCase --> GameRepository
+    }
+
+    package "user" <<Rectangle>> {
+        interface UserRepository <<Repository>> {
+            + save(user: User): UUID
+            + findByUsername(username: String): User
+            + findByUuid(uuid: UUID): User
+        }
+
+        class RegisterUserUseCase <<UseCase>> {
+            - userRepository: UserRepository
+            --
+            + register(dto: RegisterUserRequestDto): RegisterUserResponseDto
+        }
+
+        class FindUserUseCase <<UseCase>> {
+            - userRepository: UserRepository
+            --
+            + findByUsername(username: String): ApplicationUserDto
+        }
+
+        RegisterUserUseCase --> UserRepository
+        FindUserUseCase --> UserRepository
+    }
+
+    package "bot" <<Rectangle>> {
+        interface RemoteBotRepository <<Repository>> {
+            + save(bot: RemoteBotDto): void
+            + findAll(): List<RemoteBotDto>
+            + delete(name: String): void
+        }
+
+        interface BotUseCase <<UseCase>> {
+            + play(intel: Intel): CardToPlay
+            + getMaoDeOnzeResponse(intel: Intel): boolean
+            + getRaiseResponse(intel: Intel): int
+        }
+
+        class BotManagerService <<Service>> {
+            - remoteBotRepository: RemoteBotRepository
+            --
+            + loadBots(): List<BotServiceProvider>
+            + getBot(name: String): BotServiceProvider
+        }
+
+        BotManagerService --> RemoteBotRepository
+    }
+
+    package "tournament" <<Rectangle>> {
+        interface TournamentRepository <<Repository>> {
+            + save(tournament: Tournament): UUID
+            + findByUuid(uuid: UUID): Tournament
+            + findAll(): List<Tournament>
+        }
+
+        interface MatchRepository <<Repository>> {
+            + save(match: Match): UUID
+            + findByUuid(uuid: UUID): Match
+        }
+
+        class CreateTournamentUseCase <<UseCase>> {
+            - tournamentRepository: TournamentRepository
+            --
+            + create(dto: TournamentRequestDTO): TournamentResponseDTO
+        }
+
+        class PlayTournamentMatchesUseCase <<UseCase>> {
+            - matchRepository: MatchRepository
+            --
+            + playMatches(tournamentUuid: UUID): void
+        }
+
+        CreateTournamentUseCase --> TournamentRepository
+        PlayTournamentMatchesUseCase --> MatchRepository
+    }
+}
+
+' ==================== PACKAGE: Bot SPI ====================
+package "com.bueno.spi" {
+    interface BotServiceProvider <<SPI>> {
+        + getMaoDeOnzeResponse(intel: GameIntel): boolean
+        + getRaiseResponse(intel: GameIntel): int
+        + decideIfRaises(intel: GameIntel): boolean
+        + chooseCard(intel: GameIntel): CardToPlay
+        + getName(): String
+    }
+
+    class GameIntel <<SPI>> {
+        - vira: TrucoCard
+        - cards: List<TrucoCard>
+        - openCards: List<TrucoCard>
+        - score: int
+        - opponentScore: int
+        - handPoints: int
+        --
+        + getVira(): TrucoCard
+        + getCards(): List<TrucoCard>
+    }
+
+    class TrucoCard <<SPI>> {
+        - rank: CardRank
+        - suit: CardSuit
+        --
+        + of(rank: CardRank, suit: CardSuit): TrucoCard
+        + compareValueTo(other: TrucoCard, vira: TrucoCard): int
+    }
+
+    class CardToPlay <<SPI>> {
+        - card: TrucoCard
+        - shouldRaise: boolean
+        --
+        + of(card: TrucoCard): CardToPlay
+        + discard(card: TrucoCard): CardToPlay
+    }
+
+    enum CardRank <<SPI>> {
+        FOUR, FIVE, SIX, SEVEN
+        QUEEN, JACK, KING, ACE
+        TWO, THREE, HIDDEN
+    }
+
+    enum CardSuit <<SPI>> {
+        DIAMONDS, SPADES
+        HEARTS, CLUBS, HIDDEN
+    }
+
+    BotServiceProvider ..> GameIntel
+    BotServiceProvider ..> CardToPlay
+    GameIntel --> TrucoCard
+    CardToPlay --> TrucoCard
+    TrucoCard --> CardRank
+    TrucoCard --> CardSuit
+}
+
+' ==================== PACKAGE: Persistence ====================
+package "com.bueno.persistence" {
+    class UserRepositoryImpl <<Repository>> {
+        - playerDao: PlayerDao
+        --
+        + save(user: User): UUID
+        + findByUsername(username: String): User
+    }
+
+    class GameRepositoryImpl <<Repository>> {
+        - gameDao: GameDao
+        --
+        + save(game: Game): UUID
+        + findByUuid(uuid: UUID): Game
+    }
+
+    class TournamentRepositoryMongoImpl <<Repository>> {
+        - tournamentDao: TournamentDao
+        --
+        + save(tournament: Tournament): UUID
+        + findByUuid(uuid: UUID): Tournament
+    }
+
+    class ConnectionFactory {
+        --
+        {static} + getConnection(): MongoDatabase
+    }
+
+    interface PlayerDao {
+        + save(entity: PlayerEntity): void
+        + findByUsername(username: String): PlayerEntity
+    }
+
+    interface GameDao {
+        + save(entity: GameEntity): void
+        + findByUuid(uuid: UUID): GameEntity
+    }
+
+    interface TournamentDao {
+        + save(entity: TournamentEntity): void
+        + findByUuid(uuid: UUID): TournamentEntity
+    }
+
+    UserRepositoryImpl ..|> UserRepository
+    GameRepositoryImpl ..|> GameRepository
+    TournamentRepositoryMongoImpl ..|> TournamentRepository
+
+    UserRepositoryImpl --> PlayerDao
+    GameRepositoryImpl --> GameDao
+    TournamentRepositoryMongoImpl --> TournamentDao
+
+    PlayerDao --> ConnectionFactory
+    GameDao --> ConnectionFactory
+    TournamentDao --> ConnectionFactory
+}
+
+' ==================== PACKAGE: Console ====================
+package "com.bueno.application" {
+    class ConsoleStarter {
+        --
+        {static} + main(args: String[]): void
+    }
+
+    class PlayAgainstBots {
+        - createGameUseCase: CreateGameUseCase
+        - playCardUseCase: PlayCardUseCase
+        --
+        + start(): void
+    }
+
+    class RankBots {
+        - rankBotsUseCase: RankBotsUseCase
+        --
+        + rank(): void
+    }
+
+    class EvaluateBot {
+        - evaluateBotsUseCase: EvaluateBotsUseCase
+        --
+        + evaluate(): void
+    }
+
+    class ConsoleTournament {
+        - createTournamentUseCase: CreateTournamentUseCase
+        --
+        + start(): void
+    }
+
+    ConsoleStarter --> PlayAgainstBots
+    ConsoleStarter --> RankBots
+    ConsoleStarter --> EvaluateBot
+    ConsoleStarter --> ConsoleTournament
+
+    PlayAgainstBots --> CreateGameUseCase
+    PlayAgainstBots --> PlayCardUseCase
+    RankBots --> RankBotsUseCase
+    EvaluateBot --> PlayWithBotsUseCase
+    ConsoleTournament --> CreateTournamentUseCase
+}
+
+' ==================== PACKAGE: Bot Implementations ====================
+package "com.local.*" {
+    class DummyBot <<SPI>> {
+        --
+        + chooseCard(intel: GameIntel): CardToPlay
+        + getMaoDeOnzeResponse(intel: GameIntel): boolean
+        + getRaiseResponse(intel: GameIntel): int
+    }
+
+    note right of DummyBot
+        Múltiplas implementações de bots
+        (MoedorDeCana, TrucoGuru, etc.)
+    end note
+
+    DummyBot ..|> BotServiceProvider
+}
+
+' ==================== Relacionamentos principais ====================
+Game ..> Intel : "cria"
+Hand ..> Intel : "cria"
+BotManagerService ..> BotServiceProvider : "gerencia"
+
+note top of Game
+    Classe central que representa
+    uma partida de truco entre
+    dois jogadores
+end note
+
+note top of Hand
+    Representa uma "mão" (rodada)
+    dentro de um jogo. Usa padrão
+    State para gerenciar estados
+end note
+
+note top of BotServiceProvider
+    Interface SPI que permite
+    a implementação de diferentes
+    estratégias de bot
+end note
+
+@enduml
+
