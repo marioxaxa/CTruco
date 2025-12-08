@@ -88,6 +88,14 @@ fi
 echo "Found $SOURCE_COUNT source files."
 echo "Running OpenJML with args: $OPENJML_ARGS"
 
+# Load classpath from file if it exists
+if [ -f "target/openjml-classpath.txt" ]; then
+    FULL_CLASSPATH=$(cat target/openjml-classpath.txt)
+else
+    echo "Warning: target/openjml-classpath.txt not found. Classpath may be incomplete."
+    FULL_CLASSPATH=""
+fi
+
 # Check if OPENJML_PATH ends in .jar
 CMD=""
 if [[ "$OPENJML_PATH" == *.jar ]]; then
@@ -100,7 +108,7 @@ fi
 # Run the command
 if [ "$USE_FILTER" = true ]; then
     echo "Output filtered for JML warnings/errors..."
-    eval "$CMD" 2>&1 | grep -E "warning:|error:|assertion|invariant|requires|ensures|postcondition|precondition" | grep -v "module-info" | grep -v "cannot find symbol" | grep -v "package .* does not exist"
+    eval "$CMD" 2>&1 | grep -E "warning:|error:|assertion|invariant|requires|ensures|postcondition|precondition" | grep -v "module-info" | grep -v "cannot find symbol" | grep -v "package .* does not exist" | grep -v "package .* is not visible" | grep -v "static import only from classes and interfaces"
 else
     eval "$CMD"
 fi
